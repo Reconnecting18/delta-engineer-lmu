@@ -2,7 +2,7 @@
 
 > **This file is read by Claude Code at the start of every session.**
 > It provides full project context so work can resume without re-explanation.
-> **Last updated:** (update this date every time you modify this file)
+> **Last updated:** 2026-03-24
 
 ---
 
@@ -11,7 +11,7 @@
 **Name:** LMU Telemetry Analysis API
 **Repo:** lmu-telemetry-api
 **Purpose:** A standalone service that processes Le Mans Ultimate sim racing telemetry data and connects to E3N (local AI race engineer) via the `/ingest` endpoint.
-**Status:** Pre-development — project scaffolding phase
+**Status:** Milestone 1 complete — scaffolding done, ready for Milestone 2
 
 ---
 
@@ -47,17 +47,21 @@ Le Mans Ultimate (sim)
 
 ---
 
-## Tech Stack (Decided / TBD)
+## Tech Stack
 
 | Layer | Choice | Status |
 |-------|--------|--------|
-| API Framework | TBD (FastAPI preferred) | Deciding |
-| Language | TBD (Python preferred) | Deciding |
-| Database | TBD (SQLite for dev, Postgres for prod) | Deciding |
+| API Framework | FastAPI | Decided |
+| Language | Python 3.11+ | Decided |
+| Database | SQLite (dev) / PostgreSQL (prod) | Decided |
+| ORM | SQLAlchemy 2.0 (async) | Decided |
+| Validation | Pydantic v2 + pydantic-settings | Decided |
 | Real-Time | WebSockets | Decided |
 | Client UI | Electron + React | Decided |
 | AI Integration | E3N → Anthropic API | Decided |
 | Packaging | electron-builder (NSIS) | Decided |
+| Linting | ruff + black | Decided |
+| Testing | pytest + pytest-asyncio | Decided |
 
 > **Update this table** as decisions are made.
 
@@ -65,14 +69,14 @@ Le Mans Ultimate (sim)
 
 ## Current Milestone & Focus
 
-**Current:** Milestone 1 — Project Scaffolding
-**Next up:** Milestone 2 — Telemetry Ingestion & Parsing
+**Current:** Milestone 2 — Telemetry Ingestion & Parsing
+**Last completed:** Milestone 1 — Project Scaffolding (2026-03-24)
 
-### What needs to happen right now:
-1. Initialize the project structure (framework, linting, CI)
-2. Define core telemetry data models
-3. Set up config/environment management
-4. Get a basic `GET /health` endpoint running
+### What needs to happen next:
+1. Research LMU shared memory / UDP telemetry format (#4)
+2. Implement raw telemetry parser (#5)
+3. Create `POST /telemetry` ingestion endpoint (#6)
+4. Implement telemetry session management (#7)
 
 ### What is NOT in scope yet:
 - UI/Electron work (Milestone 7)
@@ -85,7 +89,7 @@ Le Mans Ultimate (sim)
 
 | # | Milestone | Status |
 |---|-----------|--------|
-| 1 | Project scaffolding, data models, config | 🔲 Not started |
+| 1 | Project scaffolding, data models, config | ✅ Complete |
 | 2 | Telemetry ingestion, parsing, sessions | 🔲 Not started |
 | 3 | Lap & sector analysis, lap comparison | 🔲 Not started |
 | 4 | Setup data model, correlation engine | 🔲 Not started |
@@ -102,7 +106,7 @@ Le Mans Ultimate (sim)
 
 | Method | Endpoint | Milestone | Status |
 |--------|----------|-----------|--------|
-| `GET` | `/health` | 1 | 🔲 |
+| `GET` | `/health` | 1 | ✅ |
 | `POST` | `/telemetry` | 2 | 🔲 |
 | `POST` | `/sessions` | 2 | 🔲 |
 | `GET` | `/sessions` | 2 | 🔲 |
@@ -122,33 +126,32 @@ Le Mans Ultimate (sim)
 
 ---
 
-## Project Structure (Target)
+## Project Structure
 
 ```
-lmu-telemetry-api/
+delta-engineer-lmu/
 ├── src/
+│   ├── main.py             # FastAPI app entry point
+│   ├── config.py           # pydantic-settings config
 │   ├── api/                # Route handlers / endpoints
-│   │   ├── telemetry.py
-│   │   ├── sessions.py
-│   │   ├── laps.py
-│   │   ├── setups.py
-│   │   ├── alerts.py
-│   │   └── ingest.py
-│   ├── core/               # Business logic
-│   │   ├── parser.py       # Raw telemetry parser
-│   │   ├── lap_detection.py
-│   │   ├── lap_analysis.py
-│   │   ├── setup_correlation.py
-│   │   └── alert_engine.py
+│   │   └── health.py       # GET /health ✅
+│   ├── core/               # Business logic (future)
 │   ├── models/             # Data models / schemas
-│   ├── db/                 # Database setup and migrations
-│   └── config.py           # Environment and app config
+│   │   ├── base.py         # SQLAlchemy DeclarativeBase
+│   │   ├── session.py      # Session ORM model
+│   │   ├── telemetry.py    # TelemetryFrame ORM model
+│   │   └── schemas.py      # Pydantic v2 request/response schemas
+│   └── db/                 # Database setup
+│       ├── engine.py       # Async engine + session factory
+│       └── init_db.py      # Table creation
 ├── tests/
 │   ├── unit/
+│   │   ├── test_health.py
+│   │   ├── test_config.py
+│   │   └── test_models.py
 │   ├── integration/
 │   └── fixtures/           # Sample telemetry payloads
 ├── docs/
-│   └── telemetry-format.md # LMU telemetry format reference
 ├── assets/                 # App icons, tray icons
 ├── CLAUDE.md               # ← You are here
 ├── README.md
@@ -174,6 +177,10 @@ Document important decisions here so they don't get re-debated each session.
 | Installer | electron-builder + NSIS | Produces proper Windows installer with Start Menu shortcuts | — |
 | System tray | Minimize to tray on close (default on) | App must stay running during sim sessions to capture telemetry | — |
 | API ↔ UI separation | Separate processes | API runs as standalone service, Electron is just a client | — |
+| API framework | Python + FastAPI | Async-native, auto OpenAPI docs, great WebSocket support | 2026-03-24 |
+| ORM | SQLAlchemy 2.0 async | Modern mapped_column syntax, async support via aiosqlite | 2026-03-24 |
+| Tire data storage | JSON columns | Cleaner than 8 separate float columns for [FL,FR,RL,RR] | 2026-03-24 |
+| AI scope | E3N handles all AI | This API is data processing only; AI lives in E3N | 2026-03-24 |
 
 > **Add rows** when new architectural decisions are made.
 
@@ -218,7 +225,15 @@ Every time you complete work in a session, **before finishing**, update the foll
 
 5. **GitHub Issues** (when applicable)
    - Note which issue(s) the work relates to in commit messages
-   - If a task is complete, mention it so the user can close the issue
+   - Add a comment to each completed issue summarizing what was done
+   - Close completed issues with `state_reason: completed`
+   - Reference the PR number in the issue comment (e.g., "Completed in PR #26")
+
+6. **GitHub Project Board** (when applicable)
+   - Move completed issues/PRs to the appropriate column (e.g., "Done")
+   - Ensure new work items are tracked on the project board
+   - Keep issue labels and milestones up to date
+   - When creating PRs, use `Closes #N` in the body to auto-link issues
 
 > **This is not optional.** Keeping these files in sync is how project continuity works across sessions. If you skip this, the next session starts blind.
 

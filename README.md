@@ -55,12 +55,16 @@ Le Mans Ultimate
 
 | Layer | Technology |
 |-------|-----------|
-| API Framework | TBD (FastAPI / Express) |
-| Database | TBD (SQLite / PostgreSQL) |
+| API Framework | FastAPI |
+| Language | Python 3.11+ |
+| Database | SQLite (dev) / PostgreSQL (prod) |
+| ORM | SQLAlchemy 2.0 (async) |
+| Validation | Pydantic v2 |
 | Real-Time | WebSockets |
 | Client | Electron + React |
 | AI Integration | E3N → Anthropic API |
-| Language | Python or TypeScript (TBD) |
+| Linting | ruff + black |
+| Testing | pytest + pytest-asyncio |
 
 ---
 
@@ -106,21 +110,18 @@ lmu-telemetry-api/
 
 ### Prerequisites
 
-- Python 3.11+ or Node.js 20+ (depending on chosen stack)
+- Python 3.11+
 - Git
 
 ### Installation
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/lmu-telemetry-api.git
-cd lmu-telemetry-api
+git clone https://github.com/Reconnecting18/delta-engineer-lmu.git
+cd delta-engineer-lmu
 
-# Install dependencies (Python example)
-pip install -r requirements.txt
-
-# Or Node.js example
-npm install
+# Install dependencies (with dev tools)
+pip install -e ".[dev]"
 ```
 
 ### Configuration
@@ -144,10 +145,8 @@ Key configuration options:
 ### Running the API
 
 ```bash
-# Development
-python -m uvicorn src.main:app --reload    # FastAPI
-# or
-npm run dev                                 # Express
+# Development (with hot reload)
+python -m uvicorn src.main:app --reload
 
 # Production
 python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
@@ -157,8 +156,18 @@ python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
 
 ```bash
 curl http://localhost:8000/health
-# → { "status": "ok", "version": "0.1.0" }
+# → {"status": "ok", "version": "0.1.0", "environment": "development"}
 ```
+
+### Running Tests
+
+```bash
+pytest -v
+```
+
+### API Docs
+
+Interactive Swagger UI available at `http://localhost:8000/docs` when the server is running.
 
 ---
 
@@ -189,7 +198,7 @@ curl http://localhost:8000/health
 ## Roadmap
 
 - [x] Project scaffolding and repo setup
-- [ ] **Milestone 1** — Project scaffolding, data models, config management
+- [x] **Milestone 1** — Project scaffolding, data models, config management
 - [ ] **Milestone 2** — Telemetry ingestion, parsing, session management
 - [ ] **Milestone 3** — Lap & sector analysis, lap comparison
 - [ ] **Milestone 4** — Setup data model, correlation engine

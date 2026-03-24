@@ -6,12 +6,12 @@
 
 ---
 
-## 🔥 Up Next (Milestone 1 — Project Scaffolding)
+## ✅ Milestone 1 — Project Scaffolding (Complete)
 
-- [ ] **#1** Initialize project repo and tech stack (framework, linting, CI, health check)
-- [ ] **#2** Define core data models for telemetry frames
-- [ ] **#3** Set up configuration and environment management
-- [ ] Finalize tech stack decision (FastAPI vs Express, Python vs TypeScript)
+- [x] **#1** Initialize project repo and tech stack (FastAPI, black, ruff, pytest, health check)
+- [x] **#2** Define core data models for telemetry frames (Session, TelemetryFrame, Pydantic schemas)
+- [x] **#3** Set up configuration and environment management (pydantic-settings)
+- [x] Finalize tech stack decision → **Python + FastAPI**
 
 ## 🔲 Milestone 2 — Telemetry Ingestion & Parsing
 
@@ -76,6 +76,8 @@
 - [x] CHANGELOG.md, TODO.md, CONTRIBUTING.md
 - [x] .env.example and .gitignore
 - [x] Researched Coach Dave Delta and TrackTitan for reference
+- [x] Fixed dotfile naming (gitignore → .gitignore, env.example → .env.example)
+- [x] Milestone 1: Full project scaffold with FastAPI, SQLAlchemy, models, config, health endpoint, tests
 - [x] Decided on Electron + React for client UI
 - [x] Decided on electron-builder + NSIS for packaging
 - [x] Decided on system tray behavior
