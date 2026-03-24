@@ -225,7 +225,15 @@ Every time you complete work in a session, **before finishing**, update the foll
 
 5. **GitHub Issues** (when applicable)
    - Note which issue(s) the work relates to in commit messages
-   - If a task is complete, mention it so the user can close the issue
+   - Add a comment to each completed issue summarizing what was done
+   - Close completed issues with `state_reason: completed`
+   - Reference the PR number in the issue comment (e.g., "Completed in PR #26")
+
+6. **GitHub Project Board** (when applicable)
+   - Move completed issues/PRs to the appropriate column (e.g., "Done")
+   - Ensure new work items are tracked on the project board
+   - Keep issue labels and milestones up to date
+   - When creating PRs, use `Closes #N` in the body to auto-link issues
 
 > **This is not optional.** Keeping these files in sync is how project continuity works across sessions. If you skip this, the next session starts blind.
 
