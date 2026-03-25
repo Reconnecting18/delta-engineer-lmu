@@ -8,6 +8,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Milestone 2 — Telemetry Ingestion & Parsing (2026-03-24)
+
+#### Added
+- `docs/telemetry-format.md` — rF2/LMU shared memory telemetry format reference
+- `src/core/parser.py` — Raw telemetry parser with rF2 field mapping and unit conversions
+- `src/core/session_manager.py` — Session boundary detection and auto-creation logic
+- `src/api/sessions.py` — Session CRUD endpoints (POST/GET/PATCH /sessions)
+- `src/api/telemetry.py` — `POST /telemetry` ingestion endpoint with batch support
+- `src/models/schemas.py` — New schemas: `SessionUpdate`, `SessionDetailResponse`, `PaginatedResponse`, `TelemetryIngestRequest`, `TelemetryIngestResponse`, `FrameError`
+- Pagination support with generic `PaginatedResponse[T]` wrapper
+- Session auto-detection from track/car/driver context with configurable gap threshold
+- 40 new tests (26 parser unit, 8 session manager unit, 10 session API integration, 10 telemetry API integration)
+- `tests/fixtures/` — Sample telemetry frame and payload fixtures
+- Config: `session_gap_threshold_seconds`, `max_batch_size` settings
+
+#### Changed
+- `TelemetryFrameCreate.session_id` is now optional (set at endpoint level, not per-frame)
+- `tests/conftest.py` — Added in-memory SQLite test database with per-test isolation
+
 ### Milestone 1 — Project Scaffolding (2026-03-24)
 
 #### Added

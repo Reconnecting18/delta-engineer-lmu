@@ -2,16 +2,16 @@
 
 > **This file is read by Claude Code at the start of every session.**
 > It provides full project context so work can resume without re-explanation.
-> **Last updated:** 2026-03-24
+> **Last updated:** 2026-03-25
 
 ---
 
 ## Project Identity
 
-**Name:** LMU Telemetry Analysis API
-**Repo:** lmu-telemetry-api
+**Name:** Delta Engineer — LMU Telemetry Analysis API
+**Repo:** delta-engineer-lmu
 **Purpose:** A standalone service that processes Le Mans Ultimate sim racing telemetry data and connects to E3N (local AI race engineer) via the `/ingest` endpoint.
-**Status:** Milestone 1 complete — scaffolding done, ready for Milestone 2
+**Status:** Milestone 2 complete — telemetry ingestion, parsing, and session management operational
 
 ---
 
@@ -69,14 +69,14 @@ Le Mans Ultimate (sim)
 
 ## Current Milestone & Focus
 
-**Current:** Milestone 2 — Telemetry Ingestion & Parsing
-**Last completed:** Milestone 1 — Project Scaffolding (2026-03-24)
+**Current:** Milestone 3 — Lap & Sector Analysis
+**Last completed:** Milestone 2 — Telemetry Ingestion & Parsing (2026-03-24)
 
 ### What needs to happen next:
-1. Research LMU shared memory / UDP telemetry format (#4)
-2. Implement raw telemetry parser (#5)
-3. Create `POST /telemetry` ingestion endpoint (#6)
-4. Implement telemetry session management (#7)
+1. Implement lap boundary detection (#8)
+2. Create lap summary computation (#9)
+3. Create `GET /sessions/{id}/laps` endpoint (#10)
+4. Implement lap comparison logic (#11)
 
 ### What is NOT in scope yet:
 - UI/Electron work (Milestone 7)
@@ -90,7 +90,7 @@ Le Mans Ultimate (sim)
 | # | Milestone | Status |
 |---|-----------|--------|
 | 1 | Project scaffolding, data models, config | ✅ Complete |
-| 2 | Telemetry ingestion, parsing, sessions | 🔲 Not started |
+| 2 | Telemetry ingestion, parsing, sessions | ✅ Complete |
 | 3 | Lap & sector analysis, lap comparison | 🔲 Not started |
 | 4 | Setup data model, correlation engine | 🔲 Not started |
 | 5 | Alert rules engine, WebSocket streaming | 🔲 Not started |
@@ -107,10 +107,11 @@ Le Mans Ultimate (sim)
 | Method | Endpoint | Milestone | Status |
 |--------|----------|-----------|--------|
 | `GET` | `/health` | 1 | ✅ |
-| `POST` | `/telemetry` | 2 | 🔲 |
-| `POST` | `/sessions` | 2 | 🔲 |
-| `GET` | `/sessions` | 2 | 🔲 |
-| `GET` | `/sessions/{id}` | 2 | 🔲 |
+| `POST` | `/telemetry` | 2 | ✅ |
+| `POST` | `/sessions` | 2 | ✅ |
+| `GET` | `/sessions` | 2 | ✅ |
+| `GET` | `/sessions/{id}` | 2 | ✅ |
+| `PATCH` | `/sessions/{id}` | 2 | ✅ |
 | `GET` | `/sessions/{id}/laps` | 3 | 🔲 |
 | `GET` | `/laps/compare` | 3 | 🔲 |
 | `POST` | `/setups` | 4 | 🔲 |
@@ -134,8 +135,12 @@ delta-engineer-lmu/
 │   ├── main.py             # FastAPI app entry point
 │   ├── config.py           # pydantic-settings config
 │   ├── api/                # Route handlers / endpoints
-│   │   └── health.py       # GET /health ✅
-│   ├── core/               # Business logic (future)
+│   │   ├── health.py       # GET /health ✅
+│   │   ├── sessions.py     # /sessions CRUD ✅
+│   │   └── telemetry.py    # POST /telemetry ✅
+│   ├── core/               # Business logic
+│   │   ├── parser.py       # rF2 telemetry parser ✅
+│   │   └── session_manager.py # Session auto-detection ✅
 │   ├── models/             # Data models / schemas
 │   │   ├── base.py         # SQLAlchemy DeclarativeBase
 │   │   ├── session.py      # Session ORM model
@@ -145,14 +150,21 @@ delta-engineer-lmu/
 │       ├── engine.py       # Async engine + session factory
 │       └── init_db.py      # Table creation
 ├── tests/
+│   ├── conftest.py         # Test fixtures, in-memory DB
 │   ├── unit/
 │   │   ├── test_health.py
 │   │   ├── test_config.py
-│   │   └── test_models.py
+│   │   ├── test_models.py
+│   │   ├── test_parser.py
+│   │   └── test_session_manager.py
 │   ├── integration/
+│   │   ├── test_sessions_api.py
+│   │   └── test_telemetry_api.py
 │   └── fixtures/           # Sample telemetry payloads
+│       ├── sample_telemetry_frame.json
+│       └── sample_telemetry_payload.json
 ├── docs/
-├── assets/                 # App icons, tray icons
+│   └── telemetry-format.md # rF2/LMU telemetry format reference ✅
 ├── CLAUDE.md               # ← You are here
 ├── README.md
 ├── CONTRIBUTING.md
@@ -160,7 +172,7 @@ delta-engineer-lmu/
 ├── TODO.md
 ├── .env.example
 ├── .gitignore
-└── package.json / pyproject.toml
+└── pyproject.toml
 ```
 
 > **Update this** if the structure changes during development.
@@ -188,7 +200,7 @@ Document important decisions here so they don't get re-debated each session.
 
 ## Known Constraints & Context
 
-- **LMU telemetry format** has not been fully documented yet — Issue #4 covers research
+- **LMU telemetry format** is documented in `docs/telemetry-format.md` (rF2 shared memory spec)
 - **E3N already exists** as a separate Electron app — do not duplicate its functionality
 - The **primary user** is a sim racer running LMU on Windows — the API and Electron client run on the same PC as the sim
 - The Electron app plays **double duty**: captures telemetry from LMU AND displays the UI dashboard
@@ -237,6 +249,25 @@ Every time you complete work in a session, **before finishing**, update the foll
 
 > **This is not optional.** Keeping these files in sync is how project continuity works across sessions. If you skip this, the next session starts blind.
 
+### ⚠️ MANDATORY: Commit, push, and sync GitHub at session end
+
+After updating all files above, you **must** also:
+
+7. **Commit all changes** using conventional commits (see below). Reference issue numbers.
+8. **Push to remote** — push the branch to `origin`. If on a feature branch, create a PR if one doesn't exist.
+9. **GitHub Issues** (when applicable)
+   - Add a comment to each completed issue summarizing what was done
+   - Close completed issues with `state_reason: completed`
+   - Reference the PR/commit (e.g., "Completed in PR #27")
+   - Add appropriate labels (`enhancement`, `bug`, `documentation`, etc.)
+10. **GitHub Project Board** (when applicable)
+    - Move completed issues to "Done" status
+    - Ensure new work items are tracked on the project board
+    - Keep issue labels and milestones up to date
+    - When creating PRs, use `Closes #N` in the body to auto-link issues
+
+**Do not end a session without committing, pushing, and updating GitHub.** The user expects all work to be persisted and visible on GitHub when a session ends.
+
 ---
 
 ## Commit Message Convention
@@ -270,3 +301,14 @@ If you're Claude Code starting a new session, here's your checklist:
 4. **Ask the user** what they want to focus on if it's not clear
 5. **Work within the current milestone** unless told otherwise
 6. **Update all docs before ending** — see "Files You Must Keep Updated" above
+
+## How to End a Session
+
+Before finishing, complete **every** step:
+
+1. **Update docs** — CLAUDE.md, README.md, CHANGELOG.md, TODO.md (see above)
+2. **Commit** — stage and commit all changes with conventional commit messages referencing issue numbers
+3. **Push** — push the branch to origin
+4. **GitHub Issues** — close completed issues with summary comments, add labels
+5. **GitHub Project Board** — move completed items to "Done"
+6. **Create PR** — if on a feature branch and no PR exists, create one with `Closes #N` in the body

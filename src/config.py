@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # Telemetry capture
     telemetry_poll_rate_ms: int = 10
     telemetry_batch_size: int = 100
+    max_batch_size: int = 1000
+
+    # Session management
+    session_gap_threshold_seconds: int = 300
 
     # E3N integration
     e3n_enabled: bool = False
