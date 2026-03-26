@@ -26,20 +26,20 @@ MS_TO_KMH = 3.6
 
 # rF2 session type mapping
 RF2_SESSION_TYPE_MAP: dict[int, str] = {
-    0: "practice",   # Test day
-    1: "practice",   # Practice 1
-    2: "practice",   # Practice 2
-    3: "practice",   # Practice 3
-    4: "practice",   # Practice 4
+    0: "practice",  # Test day
+    1: "practice",  # Practice 1
+    2: "practice",  # Practice 2
+    3: "practice",  # Practice 3
+    4: "practice",  # Practice 4
     5: "qualifying",  # Qualifying 1
     6: "qualifying",  # Qualifying 2
     7: "qualifying",  # Qualifying 3
     8: "qualifying",  # Qualifying 4
-    9: "practice",   # Warmup
-    10: "race",      # Race 1
-    11: "race",      # Race 2
-    12: "race",      # Race 3
-    13: "race",      # Race 4
+    9: "practice",  # Warmup
+    10: "race",  # Race 1
+    11: "race",  # Race 2
+    12: "race",  # Race 3
+    13: "race",  # Race 4
 }
 
 # Binary struct layout for the telemetry buffer header
@@ -62,12 +62,12 @@ VEHICLE_TELEM_SIZE = 1800  # Approximate size per vehicle
 # Offsets within rF2VehicleTelemetry for key fields (double = 8 bytes, int = 4 bytes)
 # These are approximate and may vary by plugin version
 FIELD_OFFSETS = {
-    "mElapsedTime": (0, "d"),        # c_double
-    "mLapNumber": (8, "i"),          # c_int
-    "mLapStartET": (12, "d"),        # c_double
-    "mGear": (44, "i"),              # c_int
-    "mEngineRPM": (48, "d"),         # c_double
-    "mSpeed": (280, "d"),            # c_double
+    "mElapsedTime": (0, "d"),  # c_double
+    "mLapNumber": (8, "i"),  # c_int
+    "mLapStartET": (12, "d"),  # c_double
+    "mGear": (44, "i"),  # c_int
+    "mEngineRPM": (48, "d"),  # c_double
+    "mSpeed": (280, "d"),  # c_double
     "mUnfilteredThrottle": (288, "d"),
     "mUnfilteredBrake": (296, "d"),
     "mUnfilteredSteering": (304, "d"),
@@ -82,8 +82,8 @@ FIELD_OFFSETS = {
 # Wheel block offsets (relative to wheel array start at ~500)
 WHEEL_ARRAY_OFFSET = 500
 WHEEL_BLOCK_SIZE = 200
-WHEEL_PRESSURE_OFFSET = 0     # mPressure within wheel block
-WHEEL_TEMP_OFFSET = 8         # mTemperature[0] (inner), +8 = middle, +16 = outer
+WHEEL_PRESSURE_OFFSET = 0  # mPressure within wheel block
+WHEEL_TEMP_OFFSET = 8  # mTemperature[0] (inner), +8 = middle, +16 = outer
 
 
 # --- Exceptions ---
@@ -136,7 +136,6 @@ def map_rf2_to_frame(rf2_data: dict) -> TelemetryFrameCreate:
         tire_pressures = _extract_tire_pressures(rf2_data)
 
         # Convert elapsed time to datetime
-        elapsed_time = rf2_data.get("mElapsedTime", 0.0)
         timestamp = rf2_data.get("timestamp")
         if timestamp is None:
             timestamp = datetime.now(UTC)
@@ -191,9 +190,7 @@ def parse_telemetry_header(raw: bytes) -> RawTelemetryHeader:
     )
 
 
-def parse_telemetry_frame(
-    raw: bytes, vehicle_index: int = 0
-) -> TelemetryFrameCreate:
+def parse_telemetry_frame(raw: bytes, vehicle_index: int = 0) -> TelemetryFrameCreate:
     """Parse a single vehicle's telemetry from a raw shared memory dump.
 
     Args:
@@ -225,9 +222,7 @@ def parse_telemetry_frame(
 
     vehicle_offset = offset_after_header + (vehicle_index * VEHICLE_TELEM_SIZE)
     if len(raw) < vehicle_offset + VEHICLE_TELEM_SIZE:
-        raise TelemetryParseError(
-            f"Buffer too small for vehicle {vehicle_index}"
-        )
+        raise TelemetryParseError(f"Buffer too small for vehicle {vehicle_index}")
 
     return _parse_vehicle_block(raw, vehicle_offset)
 
@@ -266,9 +261,7 @@ def parse_telemetry_batch(raw: bytes) -> list[TelemetryFrameCreate]:
             errors.append(f"Vehicle {i}: {e}")
 
     if errors and not results:
-        raise TelemetryParseError(
-            f"All vehicles failed to parse: {'; '.join(errors)}"
-        )
+        raise TelemetryParseError(f"All vehicles failed to parse: {'; '.join(errors)}")
 
     if errors:
         raise TelemetryParseError(
@@ -287,9 +280,7 @@ def map_session_type(rf2_session: int) -> str:
 # --- Private helpers ---
 
 
-def _parse_vehicle_block(
-    raw: bytes, offset: int
-) -> TelemetryFrameCreate:
+def _parse_vehicle_block(raw: bytes, offset: int) -> TelemetryFrameCreate:
     """Extract a TelemetryFrameCreate from a vehicle data block."""
     rf2_data: dict = {}
 
@@ -314,9 +305,7 @@ def _parse_vehicle_block(
     return map_rf2_to_frame(rf2_data)
 
 
-def _extract_wheel_data_binary(
-    raw: bytes, vehicle_offset: int, rf2_data: dict
-) -> None:
+def _extract_wheel_data_binary(raw: bytes, vehicle_offset: int, rf2_data: dict) -> None:
     """Extract tire temps and pressures from binary wheel data."""
     wheel_base = vehicle_offset + WHEEL_ARRAY_OFFSET
     temps_k: list[float] = []

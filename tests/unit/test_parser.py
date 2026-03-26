@@ -10,11 +10,9 @@ import pytest
 
 from src.core.parser import (
     HEADER_FORMAT,
-    HEADER_SIZE,
     KELVIN_OFFSET,
     MS_TO_KMH,
     NUM_VEHICLES_FORMAT,
-    NUM_VEHICLES_SIZE,
     VEHICLE_TELEM_SIZE,
     TelemetryParseError,
     map_rf2_to_frame,
@@ -85,18 +83,10 @@ class TestMapRf2ToFrame:
         """Tire temps should be converted from Kelvin to Celsius."""
         frame = map_rf2_to_frame(sample_rf2_data)
         assert frame.tire_temps is not None
-        assert frame.tire_temps.front_left == pytest.approx(
-            368.35 - KELVIN_OFFSET
-        )
-        assert frame.tire_temps.front_right == pytest.approx(
-            369.25 - KELVIN_OFFSET
-        )
-        assert frame.tire_temps.rear_left == pytest.approx(
-            371.15 - KELVIN_OFFSET
-        )
-        assert frame.tire_temps.rear_right == pytest.approx(
-            370.65 - KELVIN_OFFSET
-        )
+        assert frame.tire_temps.front_left == pytest.approx(368.35 - KELVIN_OFFSET)
+        assert frame.tire_temps.front_right == pytest.approx(369.25 - KELVIN_OFFSET)
+        assert frame.tire_temps.rear_left == pytest.approx(371.15 - KELVIN_OFFSET)
+        assert frame.tire_temps.rear_right == pytest.approx(370.65 - KELVIN_OFFSET)
 
     def test_tire_pressures_direct(self, sample_rf2_data: dict):
         """Tire pressures should pass through directly (kPa)."""
@@ -197,9 +187,7 @@ class TestParseTelemetryFrame:
             parse_telemetry_frame(raw)
 
     def test_truncated_buffer(self):
-        raw = struct.pack(HEADER_FORMAT, 1, 1, 0) + struct.pack(
-            NUM_VEHICLES_FORMAT, 1
-        )
+        raw = struct.pack(HEADER_FORMAT, 1, 1, 0) + struct.pack(NUM_VEHICLES_FORMAT, 1)
         # No vehicle data follows
         with pytest.raises(TelemetryParseError, match="too small"):
             parse_telemetry_frame(raw)

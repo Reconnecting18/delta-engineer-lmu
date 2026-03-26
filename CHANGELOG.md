@@ -8,6 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Milestone 3 — Lap & Sector Analysis (2026-03-26)
+
+#### Added
+- `src/models/lap.py` — `LapSummary` ORM model (timing, speed, tires, fuel, validity)
+- `src/core/lap_analyzer.py` — Lap boundary detection, summary computation, and comparison logic
+- `src/api/laps.py` — Lap analysis endpoints:
+  - `GET /sessions/{id}/laps` — List lap summaries (paginated, filterable, sortable)
+  - `POST /sessions/{id}/laps/compute` — Trigger lap computation from telemetry frames
+  - `GET /laps/compare?ids=A,B` — Full delta analysis between two laps
+- New schemas: `LapSummaryResponse`, `LapComparisonResult`, `SectorDelta`, `SpeedTracePoint`, `InputTracePoint`
+- Lap validity detection (pit laps, unrealistically short laps)
+- Sector time computation from sector boundary detection
+- Speed trace and input (throttle/brake) trace comparison with configurable sample points
+- 36 new tests (20 lap analyzer unit, 17 laps API integration) — **102 total**
+- `best_lap_time` now computed from valid lap summaries when session ends
+
+#### Changed
+- `session_manager._compute_session_stats()` now queries `LapSummary` for `best_lap_time`
+- Session model gains `laps` relationship to `LapSummary`
+
 ### Milestone 2 — Telemetry Ingestion & Parsing (2026-03-24)
 
 #### Added

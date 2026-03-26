@@ -58,14 +58,14 @@ Interactive API docs available at **http://localhost:8000/docs** (Swagger UI).
 ### Running Tests
 
 ```bash
-pytest -v              # All tests (66 total)
+pytest -v              # All tests (102 total)
 pytest tests/unit/     # Unit tests only
 pytest tests/integration/  # Integration tests only
 ```
 
 ---
 
-## What's Working (Milestones 1-2)
+## What's Working (Milestones 1-3)
 
 ### Telemetry Ingestion
 
@@ -144,6 +144,24 @@ The parser module (`src/core/parser.py`) converts rFactor 2 / LMU native telemet
 - **Binary parsing**: `parse_telemetry_frame()` / `parse_telemetry_batch()` — reads raw shared memory dumps
 - Full format reference in [`docs/telemetry-format.md`](docs/telemetry-format.md)
 
+### Lap Analysis
+
+Compute lap summaries from ingested telemetry, then query and compare them.
+
+```bash
+# Compute laps from telemetry frames (idempotent)
+curl -X POST http://localhost:8000/sessions/1/laps/compute
+# [{"id":1,"lap_number":1,"lap_time":82.5,"sector_1_time":25.1,...}, ...]
+
+# List laps for a session (paginated, sortable)
+curl "http://localhost:8000/sessions/1/laps?sort_by=lap_time&valid_only=true"
+
+# Compare two laps (sector deltas, speed trace, input trace)
+curl "http://localhost:8000/laps/compare?ids=1,2&sample_points=100"
+```
+
+Each lap summary includes: lap time, sector times (S1/S2/S3), top speed, average speed, tire temp range, fuel used, and validity flags (pit lap detection, minimum lap time).
+
 ---
 
 ## API Endpoints
@@ -156,8 +174,9 @@ The parser module (`src/core/parser.py`) converts rFactor 2 / LMU native telemet
 | Done | `GET` | `/sessions` | List sessions (paginated, filterable) |
 | Done | `GET` | `/sessions/{id}` | Session detail with frame count |
 | Done | `PATCH` | `/sessions/{id}` | Update / end a session |
-| Planned | `GET` | `/sessions/{id}/laps` | Lap summaries for a session |
-| Planned | `GET` | `/laps/compare` | Compare laps by ID |
+| Done | `GET` | `/sessions/{id}/laps` | Lap summaries for a session |
+| Done | `POST` | `/sessions/{id}/laps/compute` | Compute lap summaries from telemetry |
+| Done | `GET` | `/laps/compare` | Compare two laps with delta analysis |
 | Planned | `POST` | `/setups` | Upload a car setup |
 | Planned | `GET` | `/setups` | List setups (filterable) |
 | Planned | `GET` | `/setups/correlate` | Correlate setups to performance |
@@ -182,7 +201,7 @@ The parser module (`src/core/parser.py`) converts rFactor 2 / LMU native telemet
 | Client | Electron + React (planned) |
 | AI Integration | E3N via Anthropic API |
 | Linting | ruff + black |
-| Testing | pytest + pytest-asyncio (66 tests) |
+| Testing | pytest + pytest-asyncio (102 tests) |
 
 ---
 
@@ -196,14 +215,17 @@ delta-engineer-lmu/
 │   ├── api/
 │   │   ├── health.py           # GET /health
 │   │   ├── sessions.py         # /sessions CRUD + pagination
-│   │   └── telemetry.py        # POST /telemetry ingestion
+│   │   ├── telemetry.py        # POST /telemetry ingestion
+│   │   └── laps.py             # Lap summaries, comparison endpoints
 │   ├── core/
 │   │   ├── parser.py           # rF2 telemetry parser (JSON + binary)
-│   │   └── session_manager.py  # Session boundary auto-detection
+│   │   ├── session_manager.py  # Session boundary auto-detection
+│   │   └── lap_analyzer.py     # Lap detection, summary, comparison
 │   ├── models/
 │   │   ├── base.py             # SQLAlchemy DeclarativeBase
 │   │   ├── session.py          # Session ORM model
 │   │   ├── telemetry.py        # TelemetryFrame ORM model
+│   │   ├── lap.py              # LapSummary ORM model
 │   │   └── schemas.py          # Pydantic request/response schemas
 │   └── db/
 │       ├── engine.py           # Async engine + session factory
@@ -244,7 +266,7 @@ Copy `.env.example` to `.env`. Key settings:
 
 - [x] **Milestone 1** — Project scaffolding, data models, config management
 - [x] **Milestone 2** — Telemetry ingestion, parsing, session management
-- [ ] **Milestone 3** — Lap & sector analysis, lap comparison
+- [x] **Milestone 3** — Lap & sector analysis, lap comparison
 - [ ] **Milestone 4** — Setup data model, correlation engine
 - [ ] **Milestone 5** — Alert rules engine, WebSocket streaming
 - [ ] **Milestone 6** — API hardening, OpenAPI docs, E3N `/ingest` contract

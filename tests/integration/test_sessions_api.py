@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 
 class TestCreateSession:
     async def test_create_session_returns_201(self, client, sample_session_data):

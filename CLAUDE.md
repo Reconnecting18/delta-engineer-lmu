@@ -2,7 +2,7 @@
 
 > **This file is read by Claude Code at the start of every session.**
 > It provides full project context so work can resume without re-explanation.
-> **Last updated:** 2026-03-25
+> **Last updated:** 2026-03-26
 
 ---
 
@@ -11,7 +11,7 @@
 **Name:** Delta Engineer — LMU Telemetry Analysis API
 **Repo:** delta-engineer-lmu
 **Purpose:** A standalone service that processes Le Mans Ultimate sim racing telemetry data and connects to E3N (local AI race engineer) via the `/ingest` endpoint.
-**Status:** Milestone 2 complete — telemetry ingestion, parsing, and session management operational
+**Status:** Milestone 3 complete — lap & sector analysis, lap comparison operational
 
 ---
 
@@ -69,14 +69,13 @@ Le Mans Ultimate (sim)
 
 ## Current Milestone & Focus
 
-**Current:** Milestone 3 — Lap & Sector Analysis
-**Last completed:** Milestone 2 — Telemetry Ingestion & Parsing (2026-03-24)
+**Current:** Milestone 4 — Setup Correlation
+**Last completed:** Milestone 3 — Lap & Sector Analysis (2026-03-26)
 
 ### What needs to happen next:
-1. Implement lap boundary detection (#8)
-2. Create lap summary computation (#9)
-3. Create `GET /sessions/{id}/laps` endpoint (#10)
-4. Implement lap comparison logic (#11)
+1. Define car setup data model (#12)
+2. Create `POST /setups` and `GET /setups` endpoints (#13)
+3. Implement setup-to-performance correlation (#14)
 
 ### What is NOT in scope yet:
 - UI/Electron work (Milestone 7)
@@ -91,7 +90,7 @@ Le Mans Ultimate (sim)
 |---|-----------|--------|
 | 1 | Project scaffolding, data models, config | ✅ Complete |
 | 2 | Telemetry ingestion, parsing, sessions | ✅ Complete |
-| 3 | Lap & sector analysis, lap comparison | 🔲 Not started |
+| 3 | Lap & sector analysis, lap comparison | ✅ Complete |
 | 4 | Setup data model, correlation engine | 🔲 Not started |
 | 5 | Alert rules engine, WebSocket streaming | 🔲 Not started |
 | 6 | API hardening, OpenAPI docs, tests, `/ingest` stub | 🔲 Not started |
@@ -112,8 +111,9 @@ Le Mans Ultimate (sim)
 | `GET` | `/sessions` | 2 | ✅ |
 | `GET` | `/sessions/{id}` | 2 | ✅ |
 | `PATCH` | `/sessions/{id}` | 2 | ✅ |
-| `GET` | `/sessions/{id}/laps` | 3 | 🔲 |
-| `GET` | `/laps/compare` | 3 | 🔲 |
+| `GET` | `/sessions/{id}/laps` | 3 | ✅ |
+| `POST` | `/sessions/{id}/laps/compute` | 3 | ✅ |
+| `GET` | `/laps/compare` | 3 | ✅ |
 | `POST` | `/setups` | 4 | 🔲 |
 | `GET` | `/setups` | 4 | 🔲 |
 | `GET` | `/setups/correlate` | 4 | 🔲 |
@@ -137,14 +137,17 @@ delta-engineer-lmu/
 │   ├── api/                # Route handlers / endpoints
 │   │   ├── health.py       # GET /health ✅
 │   │   ├── sessions.py     # /sessions CRUD ✅
-│   │   └── telemetry.py    # POST /telemetry ✅
+│   │   ├── telemetry.py    # POST /telemetry ✅
+│   │   └── laps.py         # /sessions/{id}/laps, /laps/compare ✅
 │   ├── core/               # Business logic
 │   │   ├── parser.py       # rF2 telemetry parser ✅
-│   │   └── session_manager.py # Session auto-detection ✅
+│   │   ├── session_manager.py # Session auto-detection ✅
+│   │   └── lap_analyzer.py # Lap detection, summary, comparison ✅
 │   ├── models/             # Data models / schemas
 │   │   ├── base.py         # SQLAlchemy DeclarativeBase
 │   │   ├── session.py      # Session ORM model
 │   │   ├── telemetry.py    # TelemetryFrame ORM model
+│   │   ├── lap.py          # LapSummary ORM model
 │   │   └── schemas.py      # Pydantic v2 request/response schemas
 │   └── db/                 # Database setup
 │       ├── engine.py       # Async engine + session factory
@@ -156,10 +159,12 @@ delta-engineer-lmu/
 │   │   ├── test_config.py
 │   │   ├── test_models.py
 │   │   ├── test_parser.py
-│   │   └── test_session_manager.py
+│   │   ├── test_session_manager.py
+│   │   └── test_lap_analyzer.py
 │   ├── integration/
 │   │   ├── test_sessions_api.py
-│   │   └── test_telemetry_api.py
+│   │   ├── test_telemetry_api.py
+│   │   └── test_laps_api.py
 │   └── fixtures/           # Sample telemetry payloads
 │       ├── sample_telemetry_frame.json
 │       └── sample_telemetry_payload.json

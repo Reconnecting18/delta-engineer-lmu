@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.api.health import router as health_router
+from src.api.laps import router as laps_router
 from src.api.sessions import router as sessions_router
 from src.api.telemetry import router as telemetry_router
 from src.config import get_settings
@@ -25,5 +26,6 @@ app = FastAPI(
 )
 
 app.include_router(health_router)
+app.include_router(laps_router)
 app.include_router(sessions_router)
 app.include_router(telemetry_router)

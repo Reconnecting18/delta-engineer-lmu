@@ -89,9 +89,7 @@ class TestIngestTelemetry:
         resp = await client.post("/telemetry/", json=payload)
         assert resp.status_code == 422
 
-    async def test_ingest_with_auto_session_detection(
-        self, client, sample_frame_data
-    ):
+    async def test_ingest_with_auto_session_detection(self, client, sample_frame_data):
         """When no session_id, auto-create from track/car/driver context."""
         payload = {
             "frames": [sample_frame_data],
@@ -123,9 +121,7 @@ class TestIngestTelemetry:
         resp = await client.post("/telemetry/", json=payload)
         assert resp.status_code == 400
 
-    async def test_ingest_auto_detect_reuses_session(
-        self, client, sample_frame_data
-    ):
+    async def test_ingest_auto_detect_reuses_session(self, client, sample_frame_data):
         """Consecutive ingestions with same context reuse the same session."""
         payload = {
             "frames": [sample_frame_data],

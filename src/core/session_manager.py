@@ -12,6 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import get_settings
+from src.models.lap import LapSummary
 from src.models.session import Session, SessionType
 from src.models.telemetry import TelemetryFrame
 
@@ -45,9 +46,15 @@ async def get_or_create_session(
     if latest_frame_timestamp:
         latest_frame = await _get_latest_frame_timestamp(active.id, db)
         if latest_frame is not None:
-            # Normalize both to naive UTC for comparison (SQLite stores naive)
-            ts = latest_frame_timestamp.replace(tzinfo=None) if latest_frame_timestamp.tzinfo else latest_frame_timestamp
-            lf = latest_frame.replace(tzinfo=None) if latest_frame.tzinfo else latest_frame
+            # Normalize to naive UTC for comparison (SQLite stores naive)
+            if latest_frame_timestamp.tzinfo:
+                ts = latest_frame_timestamp.replace(tzinfo=None)
+            else:
+                ts = latest_frame_timestamp
+            if latest_frame.tzinfo:
+                lf = latest_frame.replace(tzinfo=None)
+            else:
+                lf = latest_frame
             gap = (ts - lf).total_seconds()
             if gap > settings.session_gap_threshold_seconds:
                 await end_session(active, db)
@@ -151,9 +158,7 @@ async def _get_latest_frame_timestamp(
     return result.scalar_one_or_none()
 
 
-async def _compute_session_stats(
-    session_id: int, db: AsyncSession
-) -> dict:
+async def _compute_session_stats(session_id: int, db: AsyncSession) -> dict:
     """Compute summary stats for a session from its frames."""
     # Get max lap number
     lap_stmt = select(func.max(TelemetryFrame.lap_number)).where(
@@ -162,7 +167,15 @@ async def _compute_session_stats(
     lap_result = await db.execute(lap_stmt)
     max_lap = lap_result.scalar_one_or_none()
 
+    # Get best lap time from valid lap summaries
+    best_lap_stmt = select(func.min(LapSummary.lap_time)).where(
+        LapSummary.session_id == session_id,
+        LapSummary.is_valid.is_(True),
+    )
+    best_result = await db.execute(best_lap_stmt)
+    best_lap_time = best_result.scalar_one_or_none()
+
     return {
         "total_laps": max_lap or 0,
-        "best_lap_time": None,  # Computed in Milestone 3 (lap analysis)
+        "best_lap_time": best_lap_time,
     }

@@ -20,12 +20,12 @@
 - [x] **#6** Create `POST /telemetry` ingestion endpoint
 - [x] **#7** Implement telemetry session management
 
-## 🔲 Milestone 3 — Lap & Sector Analysis
+## ✅ Milestone 3 — Lap & Sector Analysis (Complete)
 
-- [ ] **#8** Implement lap boundary detection
-- [ ] **#9** Create lap summary computation
-- [ ] **#10** Create `GET /sessions/{id}/laps` endpoint
-- [ ] **#11** Implement lap comparison logic
+- [x] **#8** Implement lap boundary detection
+- [x] **#9** Create lap summary computation
+- [x] **#10** Create `GET /sessions/{id}/laps` endpoint
+- [x] **#11** Implement lap comparison logic
 
 ## 🔲 Milestone 4 — Setup Correlation
 
@@ -79,6 +79,7 @@
 - [x] Fixed dotfile naming (gitignore → .gitignore, env.example → .env.example)
 - [x] Milestone 1: Full project scaffold with FastAPI, SQLAlchemy, models, config, health endpoint, tests
 - [x] Milestone 2: Telemetry format docs, parser, session management, POST /telemetry endpoint (66 tests)
+- [x] Milestone 3: Lap boundary detection, summary computation, lap comparison, laps API (102 tests)
 - [x] Decided on Electron + React for client UI
 - [x] Decided on electron-builder + NSIS for packaging
 - [x] Decided on system tray behavior

@@ -118,6 +118,74 @@ class PaginatedResponse(BaseModel, Generic[T]):
         return max(1, math.ceil(total / limit)) if total > 0 else 0
 
 
+# --- Lap Summary ---
+
+
+class LapSummaryResponse(BaseModel):
+    id: int
+    session_id: int
+    lap_number: int
+    lap_time: float
+    sector_1_time: float | None
+    sector_2_time: float | None
+    sector_3_time: float | None
+    top_speed: float
+    average_speed: float
+    min_tire_temp: float | None
+    max_tire_temp: float | None
+    fuel_used: float
+    fuel_level_start: float
+    fuel_level_end: float
+    is_valid: bool
+    is_pit_lap: bool
+    started_at: datetime
+    ended_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# --- Lap Comparison ---
+
+
+class SectorDelta(BaseModel):
+    """Sector-by-sector delta between two laps."""
+
+    sector: int
+    lap_a_time: float | None
+    lap_b_time: float | None
+    delta: float | None  # b - a (negative = b faster)
+
+
+class SpeedTracePoint(BaseModel):
+    """A point on the speed trace for comparison."""
+
+    timestamp_offset: float  # seconds from lap start
+    lap_a_speed: float
+    lap_b_speed: float
+    speed_delta: float  # b - a
+
+
+class InputTracePoint(BaseModel):
+    """Throttle/brake comparison at a point in time."""
+
+    timestamp_offset: float
+    lap_a_throttle: float
+    lap_a_brake: float
+    lap_b_throttle: float
+    lap_b_brake: float
+
+
+class LapComparisonResult(BaseModel):
+    """Full delta analysis between two laps."""
+
+    lap_a: LapSummaryResponse
+    lap_b: LapSummaryResponse
+    time_delta: float  # b - a total lap time
+    sector_deltas: list[SectorDelta]
+    speed_trace: list[SpeedTracePoint]
+    input_trace: list[InputTracePoint]
+
+
 # --- Telemetry Ingestion ---
 
 

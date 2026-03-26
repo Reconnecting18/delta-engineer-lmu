@@ -11,6 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import Base
 
 if TYPE_CHECKING:
+    from src.models.lap import LapSummary
     from src.models.telemetry import TelemetryFrame
 
 
@@ -37,3 +38,4 @@ class Session(Base):
     best_lap_time: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     frames: Mapped[list[TelemetryFrame]] = relationship(back_populates="session")
+    laps: Mapped[list[LapSummary]] = relationship(back_populates="session")
