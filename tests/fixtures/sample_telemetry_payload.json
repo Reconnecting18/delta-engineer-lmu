@@ -1,0 +1,44 @@
+{
+  "session_id": 1,
+  "frames": [
+    {
+      "timestamp": "2026-03-24T14:30:00Z",
+      "lap_number": 3,
+      "sector": 0,
+      "throttle": 0.85,
+      "brake": 0.0,
+      "steering": -0.12,
+      "gear": 4,
+      "speed": 245.6,
+      "rpm": 8500.0,
+      "fuel_level": 42.5,
+      "weather_conditions": "dry"
+    },
+    {
+      "timestamp": "2026-03-24T14:30:00.020Z",
+      "lap_number": 3,
+      "sector": 0,
+      "throttle": 0.90,
+      "brake": 0.0,
+      "steering": -0.10,
+      "gear": 4,
+      "speed": 247.2,
+      "rpm": 8600.0,
+      "fuel_level": 42.4,
+      "weather_conditions": "dry"
+    },
+    {
+      "timestamp": "2026-03-24T14:30:00.040Z",
+      "lap_number": 3,
+      "sector": 1,
+      "throttle": 0.0,
+      "brake": 0.95,
+      "steering": 0.45,
+      "gear": 3,
+      "speed": 220.1,
+      "rpm": 7200.0,
+      "fuel_level": 42.3,
+      "weather_conditions": "dry"
+    }
+  ]
+}

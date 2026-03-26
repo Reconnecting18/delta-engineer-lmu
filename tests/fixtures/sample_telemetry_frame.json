@@ -1,0 +1,23 @@
+{
+  "mUnfilteredThrottle": 0.85,
+  "mUnfilteredBrake": 0.0,
+  "mUnfilteredSteering": -0.12,
+  "mGear": 4,
+  "mSpeed": 68.22,
+  "mEngineRPM": 8500.0,
+  "mPos": {
+    "x": 1234.56,
+    "y": 12.34,
+    "z": -567.89
+  },
+  "mLapNumber": 3,
+  "mSector": 2,
+  "mElapsedTime": 425.678,
+  "mFuel": 42.5,
+  "mRaining": 0.0,
+  "mWheels": {
+    "temps_k": [368.35, 369.25, 371.15, 370.65],
+    "pressures": [172.0, 173.0, 165.0, 166.0]
+  },
+  "timestamp": "2026-03-24T14:30:00Z"
+}
