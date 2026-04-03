@@ -19,9 +19,7 @@ LMU (sim process)
     └─── UDP Broadcast (optional) ──► External tools
 ```
 
-**Primary data path:** The Electron client reads shared memory directly and POSTs
-pre-parsed JSON frames to this API. The binary parser in `src/core/parser.py` is
-for offline replay of captured memory dumps.
+**Primary data path:** The Electron client spawns `scripts/lmu_capture_bridge.py`, which reads shared memory and POSTs parsed JSON frames to this API (`POST /telemetry` with `session_id`). The binary parser in `src/core/parser.py` is also used by that bridge and for offline replay of captured memory dumps.
 
 ---
 

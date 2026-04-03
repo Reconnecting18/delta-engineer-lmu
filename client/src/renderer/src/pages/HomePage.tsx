@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useCaptureStatus } from '@renderer/hooks/useCaptureStatus'
 import { useHealthQuery } from '@renderer/hooks/useHealthQuery'
 import { useSessionsQuery } from '@renderer/hooks/useSessionsQuery'
 import { useSettings } from '@renderer/context/SettingsContext'
@@ -8,6 +9,18 @@ export function HomePage(): JSX.Element {
   const { data: health, isError, isFetching } = useHealthQuery()
   const { data: sessionsData, isLoading: sessionsLoading } = useSessionsQuery(1, 5)
   const { loaded, ipcAvailable } = useSettings()
+  const captureStatus = useCaptureStatus()
+
+  const captureSummary =
+    captureStatus == null
+      ? ipcAvailable
+        ? 'Idle'
+        : 'Browser mode'
+      : captureStatus.state === 'running' || captureStatus.state === 'starting'
+        ? `Active · ${captureStatus.ticksPosted} posts`
+        : captureStatus.state === 'error'
+          ? `Error`
+          : 'Idle'
 
   const recent = sessionsData?.items.slice(0, 5) ?? []
 
@@ -28,9 +41,10 @@ export function HomePage(): JSX.Element {
         </div>
         <div className="home-card home-card-glow">
           <h2 className="home-card-title">Capture</h2>
-          <p className="home-card-value">{ipcAvailable ? 'IPC ready' : 'Browser mode'}</p>
+          <p className="home-card-value">{!loaded ? '…' : captureSummary}</p>
           <p className="home-card-hint muted">
-            Live LMU capture status will appear here when the main process pipeline is connected.
+            <Link to="/live">Open Live capture</Link> to stream LMU telemetry into a session (Windows +
+            Python + shared-memory plugin).
           </p>
         </div>
       </section>

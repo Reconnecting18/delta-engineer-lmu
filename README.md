@@ -74,10 +74,23 @@ cd client
 npm run build   # outputs to client/out/
 ```
 
+#### Live LMU capture (Windows)
+
+End-to-end path from the sim into the API:
+
+1. Install the [rF2 Shared Memory Map plugin](https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin) in LMU and enable it (see [`docs/telemetry-format.md`](docs/telemetry-format.md)).
+2. Start the Delta Engineer API (`uvicorn`).
+3. Create a session (`POST /sessions` or **Sessions** in the UI) and note its `id`.
+4. Open **Live capture** in the Electron app, enter that session id, and click **Start capture**.
+
+The desktop app spawns a small Python bridge ([`scripts/lmu_capture_bridge.py`](scripts/lmu_capture_bridge.py)) that maps the Windows telemetry shared memory object `$rFactor2SMMP_Telemetry$`, parses the player vehicle with [`src/core/parser.py`](src/core/parser.py), and `POST`s each new frame to `/telemetry/` with your `session_id`.
+
+**Requirements:** Windows, Python 3.11+ on `PATH` (the app tries `py -3` first on Windows). Override the interpreter with `DELTA_PYTHON`, or the script path with `DELTA_CAPTURE_SCRIPT`, if needed.
+
 ### Running Tests
 
 ```bash
-pytest -v              # All tests (102 total)
+pytest -v              # All tests (103+ total)
 pytest tests/unit/     # Unit tests only
 pytest tests/integration/  # Integration tests only
 ```
@@ -220,7 +233,7 @@ Each lap summary includes: lap time, sector times (S1/S2/S3), top speed, average
 | Client | Electron + Vite + React + TypeScript (`client/`, issue #24) |
 | AI Integration | E3N via Anthropic API |
 | Linting | ruff + black |
-| Testing | pytest + pytest-asyncio (102 tests) |
+| Testing | pytest + pytest-asyncio (103+ tests) |
 
 ---
 
@@ -236,6 +249,8 @@ delta-engineer-lmu/
 │   │   ├── sessions.py         # /sessions CRUD + pagination
 │   │   ├── telemetry.py        # POST /telemetry ingestion
 │   │   └── laps.py             # Lap summaries, comparison endpoints
+│   ├── capture/
+│   │   └── lmu_shared_memory.py # Windows read of rF2/LMU telemetry shared memory
 │   ├── core/
 │   │   ├── parser.py           # rF2 telemetry parser (JSON + binary)
 │   │   ├── session_manager.py  # Session boundary auto-detection
@@ -254,17 +269,26 @@ delta-engineer-lmu/
 │   ├── unit/                   # Parser, session manager, config, model tests
 │   ├── integration/            # Full HTTP endpoint tests
 │   └── fixtures/               # Sample telemetry payloads
+├── scripts/
+│   └── lmu_capture_bridge.py   # Poll shared memory → POST /telemetry (spawned by Electron)
 ├── client/                     # Electron + Vite + React UI (#24)
 │   ├── package.json
 │   ├── electron.vite.config.ts
-│   └── src/                    # main, preload, renderer
+│   └── src/                    # main, preload, renderer, shared types
 ├── docs/
 │   ├── telemetry-format.md     # rF2/LMU shared memory format reference
 │   └── ui-architecture.md      # UI / IPC design (#23)
 ├── pyproject.toml              # Dependencies, black/ruff/pytest config
 ├── .env.example                # Environment variable template
+├── AGENTS.md                   # Short agent/AI onboarding (architecture + capture pointers)
 └── CLAUDE.md                   # Claude Code session context
 ```
+
+---
+
+## Project tracking
+
+Work is organized in **[GitHub Issues](https://github.com/Reconnecting18/delta-engineer-lmu/issues)** and, when enabled, **GitHub Projects** linked to [this repository](https://github.com/Reconnecting18/delta-engineer-lmu). For AI-assisted sessions, start with **`AGENTS.md`**, **`CLAUDE.md`**, and this **`README`**.
 
 ---
 

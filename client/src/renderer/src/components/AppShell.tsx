@@ -7,13 +7,21 @@ import { ApiSettingsModal } from './ApiSettingsModal'
 const nav = [
   { to: '/', label: 'Home', end: true },
   { to: '/sessions', label: 'Sessions' },
+  { to: '/live', label: 'Live capture' },
   { to: '/coach', label: 'Coach' },
   { to: '/progress', label: 'Progress' },
 ] as const
 
 export function AppShell(): JSX.Element {
   const { data, isError, isFetching } = useHealthQuery()
-  const { loaded, ipcAvailable, apiBaseUrl, setApiBaseUrl } = useSettings()
+  const {
+    loaded,
+    ipcAvailable,
+    apiBaseUrl,
+    minimizeToTray,
+    setApiBaseUrl,
+    setMinimizeToTray,
+  } = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   return (
@@ -45,7 +53,7 @@ export function AppShell(): JSX.Element {
             type="button"
             className={`api-pill ${isError ? 'error' : data ? 'ok' : ''}`}
             onClick={() => setSettingsOpen(true)}
-            title="Change API URL"
+            title="Settings"
           >
             API {isFetching ? '…' : isError ? 'offline' : data ? `v${data.version}` : '—'}
           </button>
@@ -57,8 +65,11 @@ export function AppShell(): JSX.Element {
       <ApiSettingsModal
         open={settingsOpen}
         initialUrl={apiBaseUrl}
+        initialMinimizeToTray={minimizeToTray}
+        showTrayPreference={ipcAvailable}
         onClose={() => setSettingsOpen(false)}
         onSave={setApiBaseUrl}
+        onSaveMinimizeToTray={setMinimizeToTray}
       />
     </div>
   )

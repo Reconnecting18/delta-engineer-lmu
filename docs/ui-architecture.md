@@ -1,6 +1,6 @@
 # Delta Engineer — Electron UI architecture & wireframes
 
-> **Status:** Design specification for Milestone 7 (issue #23). Implementation follows in #24+.
+> **Status:** Design specification for Milestone 7 (issue #23). Core shell + Sessions/Laps + **Live capture** (shared-memory bridge) are implemented in `client/`; dashboards / Setups / Alerts still evolve per milestones.
 > **Stack:** Electron + React, `electron-builder` (NSIS), API as a separate process.
 
 ---
@@ -26,7 +26,7 @@
 ### 2.2 Status and settings
 
 - **API base URL** — User setting (e.g. `http://127.0.0.1:8000`); stored locally; health polled periodically when the window is focused.
-- **Capture pipeline** — Main process owns shared-memory / UDP reader; renderer sees state via IPC (`capture:status` — connected, Hz, last error).
+- **Capture pipeline** — Main process spawns `scripts/lmu_capture_bridge.py` (Python); renderer sees state via IPC (`capture:status` — running/idle/errors, tick count). UDP is not used for LMU in this repo.
 - **Tray** — Align with product decision: minimize-to-tray on close (default on); tray menu: Show window, Start/stop capture (optional), Quit.
 
 ```mermaid
@@ -162,7 +162,7 @@ Wireframes are **structural** (regions and widgets), not pixel-perfect mocks.
 
 ## 6. Electron process architecture
 
-- **Main** — `BrowserWindow`, system tray, lifecycle, **LMU capture** (native / Node addon or child process), batching and `POST /telemetry`, periodic `GET /health` optional (or leave to renderer).
+- **Main** — `BrowserWindow`, system tray, lifecycle, **LMU capture** via **child Python process** (`lmu_capture_bridge.py`) that maps Windows shared memory and POSTs each frame to `/telemetry/`; optional batching could be added later inside the bridge.
 - **Preload** — `contextBridge.exposeInMainWorld` with a narrow, typed API; **no** raw `ipcRenderer` in renderer.
 - **Renderer** — React + router; `fetch` to Delta Engineer API; receives telemetry **samples** via bridged events for UI only (not for re-parsing binary in renderer).
 
@@ -186,8 +186,8 @@ flowchart LR
 |------|-----------|---------------------------|--------|
 | Config | R ↔ M | `config:get`, `config:set` | API base URL, theme, tray preference |
 | Capture | M → R | `capture:frame` (throttled) | Decoded dict or binary handle + metadata; throttle to UI budget (e.g. 20–30 Hz display) |
-| Capture | R → M | `capture:start`, `capture:stop` | User control |
-| Capture | M → R | `capture:status` | Connected, Hz, errors |
+| Capture | R → M | `delta:start-capture`, `delta:stop-capture` (`invoke`) | User control; payload includes `sessionId`, `apiBaseUrl` |
+| Capture | M → R | `capture:status` | Running/idle/error + tick count |
 | Telemetry POST | M (internal) | — | Main or worker posts batches to `POST /telemetry` |
 | Window | R → M | `window:minimize-to-tray` | Tray behavior |
 
@@ -251,13 +251,16 @@ App
 ## 9. Implementation status (#24)
 
 1. **Done:** Electron + Vite + React + TypeScript in [`client/`](../client/).
-2. **Done:** Preload exposes `window.delta` (`getSettings` / `setSettings`); main persists `delta-engineer-settings.json` (API base URL, last selected session id).
-3. **Done:** Shell + routing; **Sessions** and **Lap summaries** read from the API; Live / Setups / Alerts are placeholders until those milestones ship.
+2. **Done:** Preload exposes `window.delta` (`getSettings` / `setSettings`, `getCaptureStatus` / `startCapture` / `stopCapture` / `onCaptureStatus`); main persists `delta-engineer-settings.json` (API base URL, last selected session id, tray prefs).
+3. **Done:** Shell + routing; **Sessions** and **Lap summaries** read from the API.
+4. **Done:** **Live capture** — main spawns [`scripts/lmu_capture_bridge.py`](../scripts/lmu_capture_bridge.py); renderer **Live capture** page starts/stops the bridge for a user-chosen `session_id`.
+5. **Planned:** Rich live dashboard (throttled `capture:frame` IPC), **Setups**, **Alerts** views.
 
 ---
 
 ## References
 
-- [README.md](../README.md) — Endpoint table and architecture diagram
+- [README.md](../README.md) — Endpoint table, live capture steps, architecture diagram
+- [AGENTS.md](../AGENTS.md) — Short agent onboarding and capture paths
 - [CLAUDE.md](../CLAUDE.md) — Project decisions and milestone status
 - [docs/telemetry-format.md](./telemetry-format.md) — LMU / rF2 telemetry fields (informs Live dashboard channels)

@@ -1,14 +1,17 @@
+import type { AppSettings } from '@shared/app-settings'
+
 /** Used when preload IPC is unavailable (e.g. misconfigured preload path). */
 const FALLBACK_KEY = 'delta-engineer-renderer-settings'
 
-export type PersistedSettings = {
-  apiBaseUrl: string
-  lastSelectedSessionId: number | null
-}
+export type PersistedSettings = Pick<
+  AppSettings,
+  'apiBaseUrl' | 'lastSelectedSessionId' | 'minimizeToTray'
+>
 
 export const defaultPersistedSettings = (): PersistedSettings => ({
   apiBaseUrl: 'http://127.0.0.1:8000',
   lastSelectedSessionId: null,
+  minimizeToTray: true,
 })
 
 export function readRendererFallback(): PersistedSettings {

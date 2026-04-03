@@ -3,21 +3,34 @@ import { useEffect, useState, type FormEvent } from 'react'
 type Props = {
   open: boolean
   initialUrl: string
+  initialMinimizeToTray: boolean
+  showTrayPreference: boolean
   onClose: () => void
   onSave: (url: string) => Promise<void>
+  onSaveMinimizeToTray: (value: boolean) => Promise<void>
 }
 
-export function ApiSettingsModal({ open, initialUrl, onClose, onSave }: Props): JSX.Element | null {
+export function ApiSettingsModal({
+  open,
+  initialUrl,
+  initialMinimizeToTray,
+  showTrayPreference,
+  onClose,
+  onSave,
+  onSaveMinimizeToTray,
+}: Props): JSX.Element | null {
   const [url, setUrl] = useState(initialUrl)
+  const [minimizeToTray, setMinimizeToTray] = useState(initialMinimizeToTray)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
       setUrl(initialUrl)
+      setMinimizeToTray(initialMinimizeToTray)
       setError(null)
     }
-  }, [open, initialUrl])
+  }, [open, initialUrl, initialMinimizeToTray])
 
   if (!open) {
     return null
@@ -34,6 +47,9 @@ export function ApiSettingsModal({ open, initialUrl, onClose, onSave }: Props): 
       }
       new URL(trimmed)
       await onSave(trimmed)
+      if (showTrayPreference) {
+        await onSaveMinimizeToTray(minimizeToTray)
+      }
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid URL')
@@ -47,12 +63,13 @@ export function ApiSettingsModal({ open, initialUrl, onClose, onSave }: Props): 
       <div
         className="modal"
         role="dialog"
-        aria-labelledby="api-settings-title"
+        aria-labelledby="settings-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="api-settings-title">API connection</h2>
-        <p className="modal-hint">Delta Engineer API base URL (running uvicorn).</p>
+        <h2 id="settings-title">Settings</h2>
         <form onSubmit={(e) => void handleSubmit(e)}>
+          <h3 className="modal-section-title">API connection</h3>
+          <p className="modal-hint">Delta Engineer API base URL (running uvicorn).</p>
           <label htmlFor="api-url">Base URL</label>
           <input
             id="api-url"
@@ -63,6 +80,19 @@ export function ApiSettingsModal({ open, initialUrl, onClose, onSave }: Props): 
             autoComplete="off"
             spellCheck={false}
           />
+          {showTrayPreference ? (
+            <>
+              <h3 className="modal-section-title">Application</h3>
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={minimizeToTray}
+                  onChange={(e) => setMinimizeToTray(e.target.checked)}
+                />
+                <span>Minimize to system tray when closing the window</span>
+              </label>
+            </>
+          ) : null}
           {error ? <p className="error-text">{error}</p> : null}
           <div className="modal-actions">
             <button type="button" className="btn secondary" onClick={onClose}>

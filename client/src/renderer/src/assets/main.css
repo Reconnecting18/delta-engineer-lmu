@@ -290,6 +290,32 @@ code {
   font-size: 1.1rem;
 }
 
+.modal-section-title {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.modal-section-title:first-of-type {
+  margin-top: 0.75rem;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--text);
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.checkbox-row input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
 .modal-hint {
   margin: 0 0 1rem;
   font-size: 0.875rem;
