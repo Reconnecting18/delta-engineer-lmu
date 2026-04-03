@@ -228,3 +228,32 @@ class TelemetryIngestResponse(BaseModel):
     frames_failed: int
     errors: list[FrameError]
     timestamp: datetime
+
+
+# --- Car setup ---
+
+
+class SetupCreate(BaseModel):
+    """Payload for POST /setups."""
+
+    name: str = Field(min_length=1, max_length=255)
+    car_name: str = Field(min_length=1, max_length=255)
+    track_name: str | None = Field(default=None, max_length=255)
+    session_id: int | None = None
+    notes: str | None = None
+    parameters: dict[str, object] = Field(default_factory=dict)
+    source_filename: str | None = Field(default=None, max_length=512)
+
+
+class SetupResponse(BaseModel):
+    id: int
+    name: str
+    car_name: str
+    track_name: str | None
+    session_id: int | None
+    notes: str | None
+    parameters: dict[str, object]
+    source_filename: str | None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

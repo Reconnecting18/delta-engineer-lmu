@@ -1,6 +1,7 @@
 # Ensure all models are imported so Base.metadata knows about them
 import src.models.lap  # noqa: F401
 import src.models.session  # noqa: F401
+import src.models.setup  # noqa: F401
 import src.models.telemetry  # noqa: F401
 from src.db.engine import engine
 from src.models.base import Base
