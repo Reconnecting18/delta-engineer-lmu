@@ -253,7 +253,7 @@ App
 1. **Done:** Electron + Vite + React + TypeScript in [`client/`](../client/).
 2. **Done:** Preload exposes `window.delta` (`getSettings` / `setSettings`, `getCaptureStatus` / `startCapture` / `stopCapture` / `onCaptureStatus`); main persists `delta-engineer-settings.json` (API base URL, last selected session id, tray prefs).
 3. **Done:** Shell + routing; **Sessions** and **Lap summaries** read from the API.
-4. **Done:** **Live capture** — main spawns [`scripts/lmu_capture_bridge.py`](../scripts/lmu_capture_bridge.py); renderer **Live capture** page starts/stops the bridge for a user-chosen `session_id`.
+4. **Done:** **Live capture** — main spawns [`scripts/lmu_capture_bridge.py`](../scripts/lmu_capture_bridge.py); renderer **Live capture** page starts/stops the bridge in **automatic session** (default; scoring-derived context, no fixed id) or **manual** `session_id` mode.
 5. **Planned:** Rich live dashboard (throttled `capture:frame` IPC), **Setups**, **Alerts** views.
 
 ---

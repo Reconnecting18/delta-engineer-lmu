@@ -4,22 +4,11 @@ import { BrowserWindow, app } from 'electron'
 import { existsSync } from 'fs'
 import { join } from 'path'
 
+import type { CaptureStatusPayload, CaptureTickMeta } from '../shared/capture-types'
+
 export type CaptureState = 'idle' | 'starting' | 'running' | 'error'
 
-export type CaptureStatusPayload =
-  | { state: 'idle'; lastError: string | null; ticksPosted: number }
-  | { state: 'starting'; sessionId: number; lastError: string | null; ticksPosted: number }
-  | {
-      state: 'running'
-      sessionId: number
-      pid: number | undefined
-      lastError: string | null
-      ticksPosted: number
-    }
-  | { state: 'error'; message: string; lastError: string | null; ticksPosted: number }
-
 function repoRootFromMainDir(): string {
-  // Dev: .../client/out/main  → repo root is three levels up
   return join(__dirname, '..', '..', '..')
 }
 
@@ -53,7 +42,9 @@ let state: CaptureState = 'idle'
 let lastError: string | null = null
 let ticksPosted = 0
 let activeSessionId: number | null = null
+let autoSessionActive = false
 let stopRequested = false
+let lastTickMeta: CaptureTickMeta | null = null
 
 function broadcastStatus(): void {
   const payload = getCaptureStatus()
@@ -64,40 +55,72 @@ function broadcastStatus(): void {
 
 export function getCaptureStatus(): CaptureStatusPayload {
   if (state === 'error') {
-    const message = lastError ?? 'Capture failed'
     return {
       state: 'error',
-      message,
+      message: lastError ?? 'Capture failed',
       lastError,
       ticksPosted,
+      sessionId: activeSessionId,
+      autoSession: autoSessionActive,
+      lastTickMeta,
     }
   }
-  if (state === 'starting' && activeSessionId != null) {
+  if (state === 'starting') {
     return {
       state: 'starting',
-      sessionId: activeSessionId,
       lastError,
       ticksPosted,
+      sessionId: activeSessionId,
+      autoSession: autoSessionActive,
+      lastTickMeta,
     }
   }
-  if (state === 'running' && activeSessionId != null) {
+  if (state === 'running') {
     return {
       state: 'running',
-      sessionId: activeSessionId,
-      pid: child?.pid,
       lastError,
       ticksPosted,
+      sessionId: activeSessionId,
+      autoSession: autoSessionActive,
+      pid: child?.pid,
+      lastTickMeta,
     }
   }
-  return { state: 'idle', lastError, ticksPosted }
+  return {
+    state: 'idle',
+    lastError,
+    ticksPosted,
+    sessionId: activeSessionId,
+    autoSession: false,
+    lastTickMeta,
+  }
+}
+
+type BridgeTickMessage = {
+  type?: string
+  version?: number
+  frames_stored?: number
+  api_session_id?: number
+  capture_mode?: string
+  track_name?: string
+  session_type?: string
+  game_phase?: number
+  current_et?: number
+  end_et?: number
+  max_laps?: number
 }
 
 export async function startCapture(options: {
-  sessionId: number
+  sessionId?: number | null
   apiBaseUrl: string
+  autoSession: boolean
 }): Promise<{ ok: boolean; error?: string }> {
   if (child) {
     return { ok: false, error: 'Capture is already running' }
+  }
+
+  if (!options.autoSession && (options.sessionId == null || options.sessionId < 1)) {
+    return { ok: false, error: 'Session ID is required in manual mode' }
   }
 
   stopRequested = false
@@ -117,16 +140,21 @@ export async function startCapture(options: {
     scriptPath,
     '--api-base-url',
     options.apiBaseUrl,
-    '--session-id',
-    String(options.sessionId),
     '--poll-interval-ms',
     '10',
   ]
+  if (options.autoSession) {
+    args.push('--auto')
+  } else {
+    args.push('--session-id', String(options.sessionId))
+  }
 
   state = 'starting'
-  activeSessionId = options.sessionId
+  autoSessionActive = options.autoSession
+  activeSessionId = options.autoSession ? null : options.sessionId ?? null
   lastError = null
   ticksPosted = 0
+  lastTickMeta = null
   broadcastStatus()
 
   try {
@@ -158,6 +186,7 @@ export async function startCapture(options: {
     child = null
     const userStop = stopRequested
     stopRequested = false
+    autoSessionActive = false
     activeSessionId = null
 
     if (userStop) {
@@ -183,11 +212,24 @@ export async function startCapture(options: {
         return
       }
       try {
-        const msg = JSON.parse(trimmed) as { type?: string }
+        const msg = JSON.parse(trimmed) as BridgeTickMessage
         if (msg.type === 'tick') {
           ticksPosted += 1
           lastError = null
           state = 'running'
+          if (typeof msg.api_session_id === 'number') {
+            activeSessionId = msg.api_session_id
+          }
+          lastTickMeta = {
+            apiSessionId: msg.api_session_id,
+            trackName: msg.track_name,
+            sessionType: msg.session_type,
+            gamePhase: msg.game_phase,
+            currentEt: msg.current_et,
+            endEt: msg.end_et,
+            maxLaps: msg.max_laps,
+            captureMode: msg.capture_mode === 'auto' ? 'auto' : 'manual',
+          }
           broadcastStatus()
         }
       } catch {
@@ -220,6 +262,8 @@ export async function stopCapture(): Promise<void> {
   }
   state = 'idle'
   activeSessionId = null
+  autoSessionActive = false
   lastError = null
+  lastTickMeta = null
   broadcastStatus()
 }

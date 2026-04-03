@@ -11,8 +11,9 @@ const delta = {
   getCaptureStatus: (): Promise<CaptureStatusPayload> =>
     ipcRenderer.invoke('delta:get-capture-status'),
   startCapture: (opts: {
-    sessionId: number
     apiBaseUrl: string
+    autoSession: boolean
+    sessionId?: number | null
   }): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('delta:start-capture', opts),
   stopCapture: (): Promise<void> => ipcRenderer.invoke('delta:stop-capture'),

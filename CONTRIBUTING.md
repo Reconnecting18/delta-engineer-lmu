@@ -21,7 +21,7 @@ cp .env.example .env
 # Then install dependencies per the chosen stack
 ```
 
-**AI / agent contributors:** read **`AGENTS.md`** first (architecture, LMU capture bridge, key file paths), then **`CLAUDE.md`** and **`README.md`**.
+**AI / agent contributors:** read **`AGENTS.md`** first (architecture, LMU capture bridge, key file paths), then **`CLAUDE.md`** and **`README.md`**. For GitHub Projects / epics mirroring, see **[`.github/PROJECTS.md`](.github/PROJECTS.md)**.
 
 ---
 

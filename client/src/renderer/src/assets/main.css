@@ -537,3 +537,19 @@ code {
 .progress-card .home-card-value {
   font-size: 1.5rem;
 }
+
+/* Live capture */
+.live-capture-check {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.live-capture-check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}

@@ -19,6 +19,6 @@ Run the FastAPI server first (`python -m uvicorn src.main:app --reload` from rep
 - `src/renderer` — React app (HashRouter, TanStack Query)
 - `src/shared` — Shared TypeScript types (`app-settings`, `capture-types`)
 
-**Live capture:** Sidebar → **Live capture**. Requires Windows, LMU + rF2 shared-memory plugin, Python on `PATH`, and the API running. See [README.md](../README.md) § Live LMU capture.
+**Live capture:** Sidebar → **Live capture**. Default **automatic session** uses scoring memory for track/car/session type; uncheck for a fixed session id. Requires Windows, LMU + rF2 plugin (telemetry + scoring), Python on `PATH`, and the API. See [README.md](../README.md) § Live LMU capture and [`.github/PROJECTS.md`](../.github/PROJECTS.md).
 
 See [docs/ui-architecture.md](../docs/ui-architecture.md) for the full design.

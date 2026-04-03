@@ -140,7 +140,9 @@ delta-engineer-lmu/
 │   │   ├── telemetry.py    # POST /telemetry ✅
 │   │   └── laps.py         # /sessions/{id}/laps, /laps/compare ✅
 │   ├── capture/            # LMU shared memory (Windows) ✅
-│   │   └── lmu_shared_memory.py
+│   │   ├── lmu_shared_memory.py
+│   │   ├── rf2_scoring_ctypes.py
+│   │   └── scoring_parser.py
 │   ├── core/               # Business logic
 │   │   ├── parser.py       # rF2 telemetry parser ✅
 │   │   ├── session_manager.py # Session auto-detection ✅
@@ -171,7 +173,7 @@ delta-engineer-lmu/
 │       ├── sample_telemetry_frame.json
 │       └── sample_telemetry_payload.json
 ├── scripts/
-│   └── lmu_capture_bridge.py  # Shared memory → POST /telemetry (Electron-spawned) ✅
+│   └── lmu_capture_bridge.py  # Telemetry [+ scoring if --auto] → POST /telemetry ✅
 ├── client/                 # Electron + Vite + React UI (#24) ✅
 │   ├── package.json
 │   ├── electron.vite.config.ts

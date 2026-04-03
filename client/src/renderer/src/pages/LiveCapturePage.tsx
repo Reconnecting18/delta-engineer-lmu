@@ -9,6 +9,7 @@ export function LiveCapturePage(): JSX.Element {
   const { apiBaseUrl, lastSelectedSessionId, setLastSelectedSessionId, loaded, ipcAvailable } =
     useSettings()
   const captureStatus = useCaptureStatus()
+  const [autoSession, setAutoSession] = useState(true)
   const [sessionInput, setSessionInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -24,20 +25,24 @@ export function LiveCapturePage(): JSX.Element {
   const handleStart = async (e: FormEvent): Promise<void> => {
     e.preventDefault()
     setLocalError(null)
-    const id = Number.parseInt(sessionInput.trim(), 10)
-    if (!Number.isFinite(id) || id < 1) {
-      setLocalError('Enter a valid session ID (positive integer).')
-      return
+    if (!autoSession) {
+      const id = Number.parseInt(sessionInput.trim(), 10)
+      if (!Number.isFinite(id) || id < 1) {
+        setLocalError('Enter a valid session ID (positive integer), or enable automatic session.')
+        return
+      }
     }
     setBusy(true)
     try {
+      const id = Number.parseInt(sessionInput.trim(), 10)
       const result = await window.delta.startCapture({
-        sessionId: id,
         apiBaseUrl,
+        autoSession,
+        sessionId: autoSession ? undefined : Number.isFinite(id) && id >= 1 ? id : undefined,
       })
       if (!result.ok) {
         setLocalError(result.error ?? 'Failed to start capture')
-      } else {
+      } else if (!autoSession && Number.isFinite(id) && id >= 1) {
         void setLastSelectedSessionId(id)
       }
     } finally {
@@ -56,9 +61,9 @@ export function LiveCapturePage(): JSX.Element {
   }
 
   const running =
-    captureStatus?.state === 'running' ||
-    captureStatus?.state === 'starting'
+    captureStatus?.state === 'running' || captureStatus?.state === 'starting'
 
+  const meta = captureStatus?.lastTickMeta
   const statusLabel = !loaded
     ? 'Loading…'
     : !bridgeOk
@@ -70,21 +75,36 @@ export function LiveCapturePage(): JSX.Element {
           : captureStatus.state === 'starting'
             ? 'Starting…'
             : captureStatus.state === 'running'
-              ? `Running · ${captureStatus.ticksPosted} posts`
-              : `Error · ${captureStatus.message}`
+              ? `Running · ${captureStatus.ticksPosted} posts${
+                  meta?.trackName ? ` · ${meta.trackName}` : ''
+                }`
+              : `Error · ${captureStatus.message ?? 'unknown'}`
 
   return (
     <div className="page live-capture-page">
       <h1>Live capture</h1>
       <p className="page-lead">
-        Stream telemetry from Le Mans Ultimate (rF2 shared memory plugin) into a session you created
-        in Delta Engineer. Start the API, create a session under Sessions, then drive with LMU
-        running.
+        Stream telemetry from Le Mans Ultimate into Delta Engineer. Use <strong>automatic session</strong>{' '}
+        to create or continue API sessions from scoring data (track, car, practice/qual/race), or pick a
+        fixed session ID for manual control.
       </p>
 
       <section className="live-capture-status" aria-label="Capture status">
         <h2 className="home-section-title">Status</h2>
         <p className="home-card-value">{statusLabel}</p>
+        {captureStatus?.sessionId != null && captureStatus.state === 'running' ? (
+          <p className="muted" role="status">
+            API session id: <strong>{captureStatus.sessionId}</strong>
+            {meta?.sessionType ? ` · ${meta.sessionType}` : ''}
+            {meta?.gamePhase != null ? ` · phase ${meta.gamePhase}` : ''}
+          </p>
+        ) : null}
+        {meta?.currentEt != null && meta.endEt != null && meta.endEt > meta.currentEt ? (
+          <p className="muted" role="status">
+            Session clock ~{meta.currentEt.toFixed(0)}s / end ~{meta.endEt.toFixed(0)}s (sim ET; see
+            telemetry-format.md)
+          </p>
+        ) : null}
         {captureStatus?.lastError && captureStatus.state !== 'error' ? (
           <p className="muted" role="status">
             {captureStatus.lastError}
@@ -94,18 +114,36 @@ export function LiveCapturePage(): JSX.Element {
 
       <section className="live-capture-form" aria-label="Start capture">
         <h2 className="home-section-title">Session</h2>
-        <form onSubmit={(e) => void handleStart(e)} className="live-capture-form-inner">
-          <label htmlFor="capture-session-id">Session ID</label>
+        <label className="live-capture-check">
           <input
-            id="capture-session-id"
-            type="number"
-            min={1}
-            step={1}
-            value={sessionInput}
-            onChange={(e) => setSessionInput(e.target.value)}
+            type="checkbox"
+            checked={autoSession}
+            onChange={(e) => setAutoSession(e.target.checked)}
             disabled={!bridgeOk || running || busy}
-            className="live-capture-input"
-          />
+          />{' '}
+          Automatic session (from LMU scoring — track, car, driver, session type)
+        </label>
+        <form onSubmit={(e) => void handleStart(e)} className="live-capture-form-inner">
+          {!autoSession ? (
+            <>
+              <label htmlFor="capture-session-id">Session ID</label>
+              <input
+                id="capture-session-id"
+                type="number"
+                min={1}
+                step={1}
+                value={sessionInput}
+                onChange={(e) => setSessionInput(e.target.value)}
+                disabled={!bridgeOk || running || busy}
+                className="live-capture-input"
+              />
+            </>
+          ) : (
+            <p className="muted">
+              Waiting for LMU with telemetry + scoring shared memory. Sessions appear under{' '}
+              <Link to="/sessions">Sessions</Link> as you drive.
+            </p>
+          )}
           <div className="live-capture-actions">
             <button
               type="submit"
@@ -138,13 +176,13 @@ export function LiveCapturePage(): JSX.Element {
         <h2 className="home-section-title">LMU setup</h2>
         <ul className="home-focus-list">
           <li>
-            Install and enable the rF2 Shared Memory Map plugin for LMU (see repository{' '}
-            <code>README.md</code> and <code>docs/telemetry-format.md</code>).
+            Install the rF2 Shared Memory Map plugin; enable both <strong>Telemetry</strong> and{' '}
+            <strong>Scoring</strong> subscriptions (automatic mode needs scoring for session context).
           </li>
           <li>Windows only — shared memory capture does not run on macOS/Linux.</li>
           <li>
-            Python 3.11+ on <code>PATH</code> (or set <code>DELTA_PYTHON</code> to your interpreter).
-            On Windows the app tries <code>py -3</code> first.
+            Python 3.11+ on <code>PATH</code> (or <code>DELTA_PYTHON</code>). On Windows the app tries{' '}
+            <code>py -3</code> first.
           </li>
         </ul>
         <p>

@@ -10,8 +10,9 @@ declare global {
       setSettings: (partial: Partial<AppSettings>) => Promise<AppSettings>
       getCaptureStatus: () => Promise<CaptureStatusPayload>
       startCapture: (opts: {
-        sessionId: number
         apiBaseUrl: string
+        autoSession: boolean
+        sessionId?: number | null
       }) => Promise<{ ok: boolean; error?: string }>
       stopCapture: () => Promise<void>
       onCaptureStatus: (cb: (status: CaptureStatusPayload) => void) => () => void

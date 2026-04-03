@@ -19,7 +19,7 @@ export function HomePage(): JSX.Element {
       : captureStatus.state === 'running' || captureStatus.state === 'starting'
         ? `Active · ${captureStatus.ticksPosted} posts`
         : captureStatus.state === 'error'
-          ? `Error`
+          ? `Error${captureStatus.message ? ` · ${captureStatus.message}` : ''}`
           : 'Idle'
 
   const recent = sessionsData?.items.slice(0, 5) ?? []

@@ -154,7 +154,10 @@ app.whenReady().then(async () => {
   ipcMain.handle('delta:get-capture-status', () => getCaptureStatus())
   ipcMain.handle(
     'delta:start-capture',
-    async (_event, opts: { sessionId: number; apiBaseUrl: string }) => startCapture(opts),
+    async (
+      _event,
+      opts: { apiBaseUrl: string; autoSession: boolean; sessionId?: number | null },
+    ) => startCapture(opts),
   )
   ipcMain.handle('delta:stop-capture', () => stopCapture())
 

@@ -2,7 +2,7 @@
 
 > **Purpose:** Give coding agents enough context to work in this repo without re-deriving architecture. Pair with [`README.md`](README.md) and [`CLAUDE.md`](CLAUDE.md).
 
-**Last updated:** 2026-04-03
+**Last updated:** 2026-04-03 (automatic session capture)
 
 ---
 
@@ -15,17 +15,21 @@
 ## GitHub tracking
 
 - **Issues:** [Reconnecting18/delta-engineer-lmu/issues](https://github.com/Reconnecting18/delta-engineer-lmu/issues)
-- **Projects:** Use the org/repo **Projects** tab when the board is linked to this repository for milestone / kanban work.
+- **Projects:** Use the repo **Projects** tab when linked; see [`.github/PROJECTS.md`](.github/PROJECTS.md) for an agent-friendly epic mirror.
 
 ---
 
 ## Data flow (live capture)
 
+**Manual:** telemetry map only → `POST /telemetry` with `session_id`.
+
+**Automatic (default in UI):** telemetry + **scoring** maps → bridge derives `track_name`, `car_name`, `driver_name`, `session_type` → `POST /telemetry` **without** `session_id` → [`get_or_create_session`](src/core/session_manager.py).
+
 ```
-LMU (rF2 Shared Memory Map plugin)
-    → Windows named mapping "$rFactor2SMMP_Telemetry$"
-    → scripts/lmu_capture_bridge.py (spawned by Electron main)
-    → POST /telemetry { session_id, frames: [...] }
+LMU (plugin: Telemetry + Scoring enabled)
+    → "$rFactor2SMMP_Telemetry$" + "$rFactor2SMMP_Scoring$"
+    → scripts/lmu_capture_bridge.py (--auto or --session-id)
+    → POST /telemetry
     → FastAPI + SQLite (TelemetryFrame rows)
 ```
 
@@ -41,7 +45,8 @@ The **API never opens shared memory**; only the bridge (or other clients) do. Sp
 | Telemetry ingest | `src/api/telemetry.py` |
 | rF2 binary → schema | `src/core/parser.py` |
 | Shared memory read (Windows) | `src/capture/lmu_shared_memory.py` |
-| Live bridge CLI | `scripts/lmu_capture_bridge.py` |
+| Scoring ctypes + session context | `src/capture/rf2_scoring_ctypes.py`, `src/capture/scoring_parser.py` |
+| Live bridge CLI | `scripts/lmu_capture_bridge.py` (`--auto` / `--session-id`) |
 | Electron main + capture spawn | `client/src/main/index.ts`, `client/src/main/capture.ts` |
 | Preload bridge | `client/src/preload/index.ts` |
 | Live UI | `client/src/renderer/src/pages/LiveCapturePage.tsx` |

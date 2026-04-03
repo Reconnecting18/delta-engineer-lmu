@@ -19,7 +19,7 @@ LMU (sim process)
     └─── UDP Broadcast (optional) ──► External tools
 ```
 
-**Primary data path:** The Electron client spawns `scripts/lmu_capture_bridge.py`, which reads shared memory and POSTs parsed JSON frames to this API (`POST /telemetry` with `session_id`). The binary parser in `src/core/parser.py` is also used by that bridge and for offline replay of captured memory dumps.
+**Primary data path:** The Electron client spawns `scripts/lmu_capture_bridge.py`. **Manual** mode uses `session_id` on `POST /telemetry`. **Automatic** mode (bridge `--auto`, default in the Live capture UI) also reads **`$rFactor2SMMP_Scoring$`** and sends `track_name`, `car_name`, `driver_name`, and `session_type` so the API can `get_or_create_session` without a fixed id. The binary parser in `src/core/parser.py` is used by that bridge and for offline replay of captured memory dumps.
 
 ---
 
