@@ -5,11 +5,10 @@ import { useSettings } from '@renderer/context/SettingsContext'
 import { ApiSettingsModal } from './ApiSettingsModal'
 
 const nav = [
+  { to: '/', label: 'Home', end: true },
   { to: '/sessions', label: 'Sessions' },
-  { to: '/live', label: 'Live' },
-  { to: '/laps', label: 'Laps' },
-  { to: '/setups', label: 'Setups' },
-  { to: '/alerts', label: 'Alerts' },
+  { to: '/coach', label: 'Coach' },
+  { to: '/progress', label: 'Progress' },
 ] as const
 
 export function AppShell(): JSX.Element {
@@ -22,10 +21,11 @@ export function AppShell(): JSX.Element {
       <aside className="sidebar">
         <div className="sidebar-brand">Delta Engineer</div>
         <nav className="sidebar-nav">
-          {nav.map(({ to, label }) => (
+          {nav.map(({ to, label, end }) => (
             <NavLink
               key={to}
               to={to}
+              end={end}
               className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
             >
               {label}

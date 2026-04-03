@@ -16,7 +16,10 @@ export function SessionsPage(): JSX.Element {
   return (
     <div className="page">
       <h1>Sessions</h1>
-      <p className="page-lead">Read-only list from <code>GET /sessions</code>.</p>
+      <p className="page-lead">
+        Open past or current sessions and jump into lap summaries for post-run analysis — data from{' '}
+        <code>GET /sessions</code>.
+      </p>
       {isLoading ? <p className="muted">Loading…</p> : null}
       {isError ? (
         <p className="error-text">{error instanceof Error ? error.message : 'Failed to load sessions'}</p>

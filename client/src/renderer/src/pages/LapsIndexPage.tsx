@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSettings } from '@renderer/context/SettingsContext'
 
-/** Entry from sidebar: jump to last session laps or prompt user. */
+/** Deep link or legacy `/laps` URL: jump to last session laps or prompt user. */
 export function LapsIndexPage(): JSX.Element {
   const navigate = useNavigate()
   const { lastSelectedSessionId, loaded } = useSettings()

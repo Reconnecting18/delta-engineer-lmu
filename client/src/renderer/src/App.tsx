@@ -1,7 +1,9 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@renderer/components/AppShell'
+import { CoachPage } from '@renderer/pages/CoachPage'
+import { HomePage } from '@renderer/pages/HomePage'
 import { LapsIndexPage } from '@renderer/pages/LapsIndexPage'
-import { PlaceholderPage } from '@renderer/pages/PlaceholderPage'
+import { ProgressPage } from '@renderer/pages/ProgressPage'
 import { SessionLapsPage } from '@renderer/pages/SessionLapsPage'
 import { SessionsPage } from '@renderer/pages/SessionsPage'
 
@@ -10,31 +12,15 @@ export default function App(): JSX.Element {
     <HashRouter>
       <Routes>
         <Route path="/" element={<AppShell />}>
-          <Route index element={<Navigate to="/sessions" replace />} />
+          <Route index element={<HomePage />} />
           <Route path="sessions" element={<SessionsPage />} />
           <Route path="sessions/:sessionId/laps" element={<SessionLapsPage />} />
           <Route path="laps" element={<LapsIndexPage />} />
-          <Route
-            path="live"
-            element={
-              <PlaceholderPage
-                title="Live telemetry"
-                description="Real-time dashboard fed from LMU capture (IPC) and POST /telemetry."
-              />
-            }
-          />
-          <Route
-            path="setups"
-            element={
-              <PlaceholderPage title="Setups" description="Setup library when POST/GET /setups ships (Milestone 4)." />
-            }
-          />
-          <Route
-            path="alerts"
-            element={
-              <PlaceholderPage title="Alerts" description="Alert feed when GET /alerts and WS /ws/alerts ship (Milestone 5)." />
-            }
-          />
+          <Route path="coach" element={<CoachPage />} />
+          <Route path="progress" element={<ProgressPage />} />
+          <Route path="live" element={<Navigate to="/sessions" replace />} />
+          <Route path="setups" element={<Navigate to="/sessions" replace />} />
+          <Route path="alerts" element={<Navigate to="/sessions" replace />} />
         </Route>
       </Routes>
     </HashRouter>
