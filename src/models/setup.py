@@ -13,7 +13,12 @@ if TYPE_CHECKING:
 
 
 class CarSetup(Base):
-    """Persisted car setup (parameters + metadata) for correlation with sessions."""
+    """Persisted car setup (metadata + JSON parameters).
+
+    The ``parameters`` column stores JSON shaped like ``SetupParameters`` in
+    ``src.models.schemas``: optional common fields plus arbitrary extra keys for
+    title-specific values.
+    """
 
     __tablename__ = "car_setups"
 

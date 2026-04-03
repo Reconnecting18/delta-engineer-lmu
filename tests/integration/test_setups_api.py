@@ -43,6 +43,17 @@ class TestCreateSetup:
         assert resp.status_code == 404
         assert resp.json()["detail"] == "Session not found"
 
+    async def test_create_setup_invalid_parameters_422(self, client):
+        resp = await client.post(
+            "/setups/",
+            json={
+                "name": "Bad TC",
+                "car_name": "Car",
+                "parameters": {"traction_control": -1},
+            },
+        )
+        assert resp.status_code == 422
+
 
 class TestListSetups:
     async def test_list_empty(self, client):

@@ -36,7 +36,7 @@ async def create_setup(
         track_name=body.track_name,
         session_id=body.session_id,
         notes=body.notes,
-        parameters=dict(body.parameters),
+        parameters=body.parameters.model_dump(mode="json", exclude_none=True),
         source_filename=body.source_filename,
     )
     db.add(setup)

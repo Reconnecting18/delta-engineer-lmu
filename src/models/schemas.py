@@ -4,7 +4,7 @@ import math
 from datetime import datetime
 from typing import Generic, TypeVar
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, model_validator
 
 T = TypeVar("T")
 
@@ -233,6 +233,45 @@ class TelemetryIngestResponse(BaseModel):
 # --- Car setup ---
 
 
+class SetupParameters(BaseModel):
+    """Structured setup parameters for sim / LMU-style cars.
+
+    Well-known fields are optional and validated when present. Any additional
+    keys (game-specific sliders, damper clicks, etc.) are accepted and stored
+    verbatim for later correlation (#14).
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    front_wing: int | None = Field(
+        default=None,
+        description="Front aero level or click index as defined by the title.",
+    )
+    rear_wing: int | None = Field(
+        default=None,
+        description="Rear aero level or click index as defined by the title.",
+    )
+    brake_bias: float | None = Field(
+        default=None,
+        description="Brake bias as reported by the sim (units vary by title).",
+    )
+    traction_control: int | None = Field(
+        default=None,
+        ge=0,
+        description="TC level or assist step (0 = off where applicable).",
+    )
+    abs_level: int | None = Field(
+        default=None,
+        ge=0,
+        description="ABS level or assist step (0 = off where applicable).",
+    )
+    fuel_load_liters: float | None = Field(
+        default=None,
+        ge=0,
+        description="Fuel mass to carry, litres (if known).",
+    )
+
+
 class SetupCreate(BaseModel):
     """Payload for POST /setups."""
 
@@ -241,7 +280,7 @@ class SetupCreate(BaseModel):
     track_name: str | None = Field(default=None, max_length=255)
     session_id: int | None = None
     notes: str | None = None
-    parameters: dict[str, object] = Field(default_factory=dict)
+    parameters: SetupParameters = Field(default_factory=SetupParameters)
     source_filename: str | None = Field(default=None, max_length=512)
 
 
@@ -252,8 +291,12 @@ class SetupResponse(BaseModel):
     track_name: str | None
     session_id: int | None
     notes: str | None
-    parameters: dict[str, object]
+    parameters: SetupParameters
     source_filename: str | None
     created_at: datetime
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("parameters")
+    def _serialize_parameters(self, value: SetupParameters) -> dict[str, object]:
+        return value.model_dump(mode="json", exclude_none=True)
