@@ -14,7 +14,7 @@ const nav = [
 
 export function AppShell(): JSX.Element {
   const { data, isError, isFetching } = useHealthQuery()
-  const { apiBaseUrl, setApiBaseUrl } = useSettings()
+  const { loaded, ipcAvailable, apiBaseUrl, setApiBaseUrl } = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   return (
@@ -36,6 +36,11 @@ export function AppShell(): JSX.Element {
       <div className="main-column">
         <header className="top-bar">
           <div className="top-bar-spacer" />
+          {loaded && !ipcAvailable ? (
+            <p className="ipc-warning" role="status">
+              Preload IPC unavailable — settings use browser storage only. Restart the app after an update.
+            </p>
+          ) : null}
           <button
             type="button"
             className={`api-pill ${isError ? 'error' : data ? 'ok' : ''}`}

@@ -47,7 +47,8 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.mjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      // sandbox: true breaks preload/contextBridge reliably on some Windows + ESM setups (blank window).
+      sandbox: false,
     },
   })
 

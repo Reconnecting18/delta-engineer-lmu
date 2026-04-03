@@ -36,6 +36,8 @@ Le Mans Ultimate (sim)
 
 ## Quick Start
 
+Run every command below **from the repository root** (the folder that contains `pyproject.toml` and `src/`). If you see `ModuleNotFoundError: No module named 'src'`, your shell is in the wrong directory.
+
 ```bash
 # Clone and install
 git clone https://github.com/Reconnecting18/delta-engineer-lmu.git
