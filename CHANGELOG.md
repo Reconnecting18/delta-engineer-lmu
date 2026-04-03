@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+#### Added
+- `docs/ui-architecture.md` — Electron UI information architecture, per-view wireframes, IPC channel map, React component map, and view→API matrix (GitHub #23)
+
 ### Milestone 3 — Lap & Sector Analysis (2026-03-26)
 
 #### Added

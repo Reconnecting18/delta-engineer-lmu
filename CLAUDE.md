@@ -2,7 +2,7 @@
 
 > **This file is read by Claude Code at the start of every session.**
 > It provides full project context so work can resume without re-explanation.
-> **Last updated:** 2026-03-26
+> **Last updated:** 2026-04-03
 
 ---
 
@@ -169,7 +169,8 @@ delta-engineer-lmu/
 │       ├── sample_telemetry_frame.json
 │       └── sample_telemetry_payload.json
 ├── docs/
-│   └── telemetry-format.md # rF2/LMU telemetry format reference ✅
+│   ├── telemetry-format.md # rF2/LMU telemetry format reference ✅
+│   └── ui-architecture.md  # Electron UI wireframes, IA, IPC (#23) ✅
 ├── CLAUDE.md               # ← You are here
 ├── README.md
 ├── CONTRIBUTING.md
@@ -198,6 +199,7 @@ Document important decisions here so they don't get re-debated each session.
 | ORM | SQLAlchemy 2.0 async | Modern mapped_column syntax, async support via aiosqlite | 2026-03-24 |
 | Tire data storage | JSON columns | Cleaner than 8 separate float columns for [FL,FR,RL,RR] | 2026-03-24 |
 | AI scope | E3N handles all AI | This API is data processing only; AI lives in E3N | 2026-03-24 |
+| UI specification | See `docs/ui-architecture.md` | Wireframes, nav, view→API matrix, Electron IPC boundaries for Milestone 7 (#23) | 2026-04-03 |
 
 > **Add rows** when new architectural decisions are made.
 
