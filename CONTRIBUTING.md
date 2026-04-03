@@ -8,7 +8,7 @@ Guidelines for developing the LMU Telemetry Analysis API.
 
 ### Prerequisites
 
-- Python 3.11+ or Node.js 20+ (depending on chosen stack)
+- Python 3.11+ and Node.js 20+ (Python for the API; Node for the `client/` Electron app)
 - Git
 - A code editor (VS Code recommended)
 
@@ -20,6 +20,8 @@ cd lmu-telemetry-api
 cp .env.example .env
 # Then install dependencies per the chosen stack
 ```
+
+**AI / agent contributors:** read **`AGENTS.md`** first (architecture, LMU capture bridge, key file paths), then **`CLAUDE.md`** and **`README.md`**. For GitHub Projects / epics mirroring, see **[`.github/PROJECTS.md`](.github/PROJECTS.md)**.
 
 ---
 

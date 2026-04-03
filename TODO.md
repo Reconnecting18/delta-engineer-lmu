@@ -49,14 +49,16 @@
 
 ## 🔲 Milestone 7 — Electron UI
 
-- [ ] **#23** Design UI wireframes and component architecture
-- [ ] **#24** Scaffold Electron app and connect to API
+- [x] **#23** Design UI wireframes and component architecture
+- [x] **#24** Scaffold Electron app and connect to API
+- [x] **LMU live capture** — `scripts/lmu_capture_bridge.py` + Electron **Live capture** page (`window.delta` IPC)
+- [x] **Automatic session capture** — scoring shared memory → `POST /telemetry` without `session_id`; UI checkbox + tick metadata (`api_session_id`, phase, ET)
 - [ ] Implement telemetry dashboard view
 - [ ] Implement lap comparison graphs
 - [ ] Implement setup manager view
 - [ ] Implement alerts feed view
 - [ ] Electron packaging (installer, Start Menu, desktop shortcut)
-- [ ] System tray support (minimize to tray on close)
+- [x] System tray support (minimize to tray on close) — implemented in `client/src/main/index.ts`
 
 ## 🔲 Milestone 8 — E3N AI Integration
 
@@ -79,7 +81,7 @@
 - [x] Fixed dotfile naming (gitignore → .gitignore, env.example → .env.example)
 - [x] Milestone 1: Full project scaffold with FastAPI, SQLAlchemy, models, config, health endpoint, tests
 - [x] Milestone 2: Telemetry format docs, parser, session management, POST /telemetry endpoint (66 tests)
-- [x] Milestone 3: Lap boundary detection, summary computation, lap comparison, laps API (102 tests)
+- [x] Milestone 3: Lap boundary detection, summary computation, lap comparison, laps API (106 tests)
 - [x] Decided on Electron + React for client UI
 - [x] Decided on electron-builder + NSIS for packaging
 - [x] Decided on system tray behavior

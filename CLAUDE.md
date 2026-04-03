@@ -2,7 +2,7 @@
 
 > **This file is read by Claude Code at the start of every session.**
 > It provides full project context so work can resume without re-explanation.
-> **Last updated:** 2026-03-26
+> **Last updated:** 2026-04-03
 
 ---
 
@@ -22,7 +22,7 @@ Le Mans Ultimate (sim)
     │
     ▼
 ┌─────────────────────┐
-│   Electron Client   │  ← Reads shared memory / UDP from LMU
+│   Electron Client   │  ← Spawns Python bridge → shared memory → POST /telemetry
 │   (Capture + UI)    │  ← Displays dashboards, graphs, alerts
 └────────┬────────────┘
          │ POST /telemetry
@@ -78,7 +78,7 @@ Le Mans Ultimate (sim)
 3. Implement setup-to-performance correlation (#14)
 
 ### What is NOT in scope yet:
-- UI/Electron work (Milestone 7)
+- Full Milestone 7 UI (live dashboards, setups, alerts feeds) — **Live capture** + Sessions/Laps shell exists in `client/`
 - E3N AI integration (Milestone 8)
 - Do not jump ahead to later milestones unless explicitly asked
 
@@ -94,7 +94,7 @@ Le Mans Ultimate (sim)
 | 4 | Setup data model, correlation engine | 🔲 Not started |
 | 5 | Alert rules engine, WebSocket streaming | 🔲 Not started |
 | 6 | API hardening, OpenAPI docs, tests, `/ingest` stub | 🔲 Not started |
-| 7 | Electron UI (dashboards, graphs, alerts) | 🔲 Not started |
+| 7 | Electron UI (dashboards, graphs, alerts) | 🔨 In progress (Live capture + Sessions/Laps) |
 | 8 | E3N AI integration | 🔲 Not started |
 
 > **Update statuses** as milestones progress: 🔲 Not started → 🔨 In progress → ✅ Complete
@@ -139,6 +139,10 @@ delta-engineer-lmu/
 │   │   ├── sessions.py     # /sessions CRUD ✅
 │   │   ├── telemetry.py    # POST /telemetry ✅
 │   │   └── laps.py         # /sessions/{id}/laps, /laps/compare ✅
+│   ├── capture/            # LMU shared memory (Windows) ✅
+│   │   ├── lmu_shared_memory.py
+│   │   ├── rf2_scoring_ctypes.py
+│   │   └── scoring_parser.py
 │   ├── core/               # Business logic
 │   │   ├── parser.py       # rF2 telemetry parser ✅
 │   │   ├── session_manager.py # Session auto-detection ✅
@@ -168,8 +172,16 @@ delta-engineer-lmu/
 │   └── fixtures/           # Sample telemetry payloads
 │       ├── sample_telemetry_frame.json
 │       └── sample_telemetry_payload.json
+├── scripts/
+│   └── lmu_capture_bridge.py  # Telemetry [+ scoring if --auto] → POST /telemetry ✅
+├── client/                 # Electron + Vite + React UI (#24) ✅
+│   ├── package.json
+│   ├── electron.vite.config.ts
+│   └── src/                # main, preload, renderer, shared
 ├── docs/
-│   └── telemetry-format.md # rF2/LMU telemetry format reference ✅
+│   ├── telemetry-format.md # rF2/LMU telemetry format reference ✅
+│   └── ui-architecture.md  # Electron UI wireframes, IA, IPC (#23) ✅
+├── AGENTS.md               # Short agent onboarding + capture map ✅
 ├── CLAUDE.md               # ← You are here
 ├── README.md
 ├── CONTRIBUTING.md
@@ -198,6 +210,8 @@ Document important decisions here so they don't get re-debated each session.
 | ORM | SQLAlchemy 2.0 async | Modern mapped_column syntax, async support via aiosqlite | 2026-03-24 |
 | Tire data storage | JSON columns | Cleaner than 8 separate float columns for [FL,FR,RL,RR] | 2026-03-24 |
 | AI scope | E3N handles all AI | This API is data processing only; AI lives in E3N | 2026-03-24 |
+| UI specification | See `docs/ui-architecture.md` | Wireframes, nav, view→API matrix, Electron IPC boundaries for Milestone 7 (#23) | 2026-04-03 |
+| UI app location | `client/` (electron-vite) | Scaffold + sessions/laps views, settings IPC (#24) | 2026-04-03 |
 
 > **Add rows** when new architectural decisions are made.
 

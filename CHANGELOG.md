@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+#### Added
+- **Automatic session live capture** — Reads `$rFactor2SMMP_Scoring$` via `src/capture/rf2_scoring_ctypes.py` + `scoring_parser.py`; bridge `--auto` / Electron checkbox `POST`s telemetry **without** `session_id` using track, car, driver, and session type so `get_or_create_session` manages DB rows (practice/qual/race transitions). UI shows `api_session_id`, phase, and sim ET hints from tick JSON. See `.github/PROJECTS.md` for board-oriented notes.
+- **LMU live capture** — `src/capture/lmu_shared_memory.py` reads Windows shared memory `$rFactor2SMMP_Telemetry$`; `scripts/lmu_capture_bridge.py` polls the buffer and `POST`s player frames to `/telemetry/` with a chosen `session_id` (manual mode). Electron **Live capture** page + IPC (`delta:start-capture`, `delta:stop-capture`, `capture:status` events). Env overrides: `DELTA_PYTHON`, `DELTA_CAPTURE_SCRIPT`.
+- `AGENTS.md` — Concise onboarding for coding agents (stack, capture pipeline, key paths, GitHub tracking).
+- `client/` — Electron + Vite + React + TypeScript app: app shell, `window.delta` settings + live capture IPC, React Query, Sessions + Lap summaries, **Live capture** route; Setups/Alerts still placeholders (GitHub #24)
+- FastAPI `CORSMiddleware` (`allow_origins=["*"]`) so the Electron renderer can call the local API from dev and packaged builds (no API auth; local use only)
+- `docs/ui-architecture.md` — Electron UI information architecture, per-view wireframes, IPC channel map, React component map, and view→API matrix (GitHub #23)
+
 ### Milestone 3 — Lap & Sector Analysis (2026-03-26)
 
 #### Added

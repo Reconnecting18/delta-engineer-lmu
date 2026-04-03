@@ -36,6 +36,8 @@ Le Mans Ultimate (sim)
 
 ## Quick Start
 
+Run every command below **from the repository root** (the folder that contains `pyproject.toml` and `src/`). If you see `ModuleNotFoundError: No module named 'src'`, your shell is in the wrong directory.
+
 ```bash
 # Clone and install
 git clone https://github.com/Reconnecting18/delta-engineer-lmu.git
@@ -55,10 +57,45 @@ curl http://localhost:8000/health
 
 Interactive API docs available at **http://localhost:8000/docs** (Swagger UI).
 
+### Electron client (UI)
+
+The desktop UI lives in [`client/`](client/). Start the API first, then:
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Read-only **Sessions** and **Lap summaries** (per session) are wired to the REST API. **API base URL** and **last opened session** persist under the Electron user-data folder via IPC (`window.delta`).
+
+```bash
+cd client
+npm run build   # outputs to client/out/
+```
+
+#### Live LMU capture (Windows)
+
+End-to-end path from the sim into the API:
+
+1. Install the [rF2 Shared Memory Map plugin](https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin) in LMU and enable it (see [`docs/telemetry-format.md`](docs/telemetry-format.md)). **Automatic session** mode requires **Telemetry** and **Scoring** buffers (default plugin subscriptions).
+2. Start the Delta Engineer API (`uvicorn`).
+3. Open **Live capture** in the Electron app:
+   - **Automatic session (default):** check *Automatic session*, then **Start capture**. The bridge reads [`$rFactor2SMMP_Scoring$`](docs/telemetry-format.md) for track, car, driver, and session type (practice / qual / race), then `POST`s frames **without** `session_id` so the API [`get_or_create_session`](src/core/session_manager.py) opens or continues the right row (including when you switch from practice to qualifying).
+   - **Manual session:** uncheck *Automatic session*, enter an existing session `id` from **Sessions** (or `POST /sessions`), then **Start capture**. Frames go to `POST /telemetry` with that `session_id`.
+
+The bridge ([`scripts/lmu_capture_bridge.py`](scripts/lmu_capture_bridge.py)) maps `$rFactor2SMMP_Telemetry$`, parses the player vehicle with [`src/core/parser.py`](src/core/parser.py), and emits JSON status lines the Electron main process shows in the UI (including `api_session_id`, `game_phase`, and sim `current_et` / `end_et` when available).
+
+CLI equivalents: `python scripts/lmu_capture_bridge.py --api-base-url http://127.0.0.1:8000 --auto` or `--session-id 1`.
+
+**Requirements:** Windows, Python 3.11+ on `PATH` (the app tries `py -3` first on Windows). Override the interpreter with `DELTA_PYTHON`, or the script path with `DELTA_CAPTURE_SCRIPT`, if needed.
+
+**Project board hints for contributors:** see [`.github/PROJECTS.md`](.github/PROJECTS.md).
+
 ### Running Tests
 
 ```bash
-pytest -v              # All tests (102 total)
+pytest -v              # All tests (106+ total)
 pytest tests/unit/     # Unit tests only
 pytest tests/integration/  # Integration tests only
 ```
@@ -198,10 +235,10 @@ Each lap summary includes: lap time, sector times (S1/S2/S3), top speed, average
 | ORM | SQLAlchemy 2.0 (async via aiosqlite) |
 | Validation | Pydantic v2 + pydantic-settings |
 | Real-Time | WebSockets (planned) |
-| Client | Electron + React (planned) |
+| Client | Electron + Vite + React + TypeScript (`client/`, issue #24) |
 | AI Integration | E3N via Anthropic API |
 | Linting | ruff + black |
-| Testing | pytest + pytest-asyncio (102 tests) |
+| Testing | pytest + pytest-asyncio (106+ tests) |
 
 ---
 
@@ -217,6 +254,10 @@ delta-engineer-lmu/
 │   │   ├── sessions.py         # /sessions CRUD + pagination
 │   │   ├── telemetry.py        # POST /telemetry ingestion
 │   │   └── laps.py             # Lap summaries, comparison endpoints
+│   ├── capture/
+│   │   ├── lmu_shared_memory.py  # Windows telemetry + scoring shared memory
+│   │   ├── rf2_scoring_ctypes.py   # ctypes layout for scoring buffer (plugin 3.7.x)
+│   │   └── scoring_parser.py     # Track/car/session context for automatic capture
 │   ├── core/
 │   │   ├── parser.py           # rF2 telemetry parser (JSON + binary)
 │   │   ├── session_manager.py  # Session boundary auto-detection
@@ -235,12 +276,28 @@ delta-engineer-lmu/
 │   ├── unit/                   # Parser, session manager, config, model tests
 │   ├── integration/            # Full HTTP endpoint tests
 │   └── fixtures/               # Sample telemetry payloads
+├── scripts/
+│   └── lmu_capture_bridge.py   # Poll shared memory → POST /telemetry (spawned by Electron)
+├── client/                     # Electron + Vite + React UI (#24)
+│   ├── package.json
+│   ├── electron.vite.config.ts
+│   └── src/                    # main, preload, renderer, shared types
+├── .github/
+│   └── PROJECTS.md             # GitHub Projects / epics mirror for agents
 ├── docs/
-│   └── telemetry-format.md     # rF2/LMU shared memory format reference
+│   ├── telemetry-format.md     # rF2/LMU shared memory format reference
+│   └── ui-architecture.md      # UI / IPC design (#23)
 ├── pyproject.toml              # Dependencies, black/ruff/pytest config
 ├── .env.example                # Environment variable template
+├── AGENTS.md                   # Short agent/AI onboarding (architecture + capture pointers)
 └── CLAUDE.md                   # Claude Code session context
 ```
+
+---
+
+## Project tracking
+
+Work is organized in **[GitHub Issues](https://github.com/Reconnecting18/delta-engineer-lmu/issues)** and, when enabled, **GitHub Projects** linked to [this repository](https://github.com/Reconnecting18/delta-engineer-lmu). A short **Projects / epics mirror** for agents lives in **[`.github/PROJECTS.md`](.github/PROJECTS.md)**. For AI-assisted sessions, start with **`AGENTS.md`**, **`CLAUDE.md`**, and this **`README`**.
 
 ---
 

@@ -12,6 +12,7 @@ from src.models.base import Base
 
 if TYPE_CHECKING:
     from src.models.lap import LapSummary
+    from src.models.setup import CarSetup
     from src.models.telemetry import TelemetryFrame
 
 
@@ -39,3 +40,4 @@ class Session(Base):
 
     frames: Mapped[list[TelemetryFrame]] = relationship(back_populates="session")
     laps: Mapped[list[LapSummary]] = relationship(back_populates="session")
+    setups: Mapped[list[CarSetup]] = relationship(back_populates="session")
