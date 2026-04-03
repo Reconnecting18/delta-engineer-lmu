@@ -55,6 +55,23 @@ curl http://localhost:8000/health
 
 Interactive API docs available at **http://localhost:8000/docs** (Swagger UI).
 
+### Electron client (UI)
+
+The desktop UI lives in [`client/`](client/). Start the API first, then:
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+Read-only **Sessions** and **Lap summaries** (per session) are wired to the REST API. **API base URL** and **last opened session** persist under the Electron user-data folder via IPC (`window.delta`).
+
+```bash
+cd client
+npm run build   # outputs to client/out/
+```
+
 ### Running Tests
 
 ```bash
@@ -198,7 +215,7 @@ Each lap summary includes: lap time, sector times (S1/S2/S3), top speed, average
 | ORM | SQLAlchemy 2.0 (async via aiosqlite) |
 | Validation | Pydantic v2 + pydantic-settings |
 | Real-Time | WebSockets (planned) |
-| Client | Electron + React (planned) |
+| Client | Electron + Vite + React + TypeScript (`client/`, issue #24) |
 | AI Integration | E3N via Anthropic API |
 | Linting | ruff + black |
 | Testing | pytest + pytest-asyncio (102 tests) |
@@ -235,8 +252,13 @@ delta-engineer-lmu/
 │   ├── unit/                   # Parser, session manager, config, model tests
 │   ├── integration/            # Full HTTP endpoint tests
 │   └── fixtures/               # Sample telemetry payloads
+├── client/                     # Electron + Vite + React UI (#24)
+│   ├── package.json
+│   ├── electron.vite.config.ts
+│   └── src/                    # main, preload, renderer
 ├── docs/
-│   └── telemetry-format.md     # rF2/LMU shared memory format reference
+│   ├── telemetry-format.md     # rF2/LMU shared memory format reference
+│   └── ui-architecture.md      # UI / IPC design (#23)
 ├── pyproject.toml              # Dependencies, black/ruff/pytest config
 ├── .env.example                # Environment variable template
 └── CLAUDE.md                   # Claude Code session context

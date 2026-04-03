@@ -8,7 +8,7 @@ Guidelines for developing the LMU Telemetry Analysis API.
 
 ### Prerequisites
 
-- Python 3.11+ or Node.js 20+ (depending on chosen stack)
+- Python 3.11+ and Node.js 20+ (Python for the API; Node for the `client/` Electron app)
 - Git
 - A code editor (VS Code recommended)
 

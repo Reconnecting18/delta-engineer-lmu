@@ -50,7 +50,7 @@
 ## 🔲 Milestone 7 — Electron UI
 
 - [x] **#23** Design UI wireframes and component architecture
-- [ ] **#24** Scaffold Electron app and connect to API
+- [x] **#24** Scaffold Electron app and connect to API
 - [ ] Implement telemetry dashboard view
 - [ ] Implement lap comparison graphs
 - [ ] Implement setup manager view

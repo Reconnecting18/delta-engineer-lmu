@@ -168,6 +168,10 @@ delta-engineer-lmu/
 │   └── fixtures/           # Sample telemetry payloads
 │       ├── sample_telemetry_frame.json
 │       └── sample_telemetry_payload.json
+├── client/                 # Electron + Vite + React UI (#24) ✅
+│   ├── package.json
+│   ├── electron.vite.config.ts
+│   └── src/                # main, preload, renderer
 ├── docs/
 │   ├── telemetry-format.md # rF2/LMU telemetry format reference ✅
 │   └── ui-architecture.md  # Electron UI wireframes, IA, IPC (#23) ✅
@@ -200,6 +204,7 @@ Document important decisions here so they don't get re-debated each session.
 | Tire data storage | JSON columns | Cleaner than 8 separate float columns for [FL,FR,RL,RR] | 2026-03-24 |
 | AI scope | E3N handles all AI | This API is data processing only; AI lives in E3N | 2026-03-24 |
 | UI specification | See `docs/ui-architecture.md` | Wireframes, nav, view→API matrix, Electron IPC boundaries for Milestone 7 (#23) | 2026-04-03 |
+| UI app location | `client/` (electron-vite) | Scaffold + sessions/laps views, settings IPC (#24) | 2026-04-03 |
 
 > **Add rows** when new architectural decisions are made.
 

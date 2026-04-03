@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 #### Added
+- `client/` — Electron + Vite + React + TypeScript app: app shell, `window.delta` settings IPC, React Query, read-only Sessions + Lap summaries views, placeholders for Live/Setups/Alerts (GitHub #24)
+- FastAPI `CORSMiddleware` (`allow_origins=["*"]`) so the Electron renderer can call the local API from dev and packaged builds (no API auth; local use only)
 - `docs/ui-architecture.md` — Electron UI information architecture, per-view wireframes, IPC channel map, React component map, and view→API matrix (GitHub #23)
 
 ### Milestone 3 — Lap & Sector Analysis (2026-03-26)

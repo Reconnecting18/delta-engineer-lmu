@@ -248,11 +248,11 @@ App
 
 ---
 
-## 9. Implementation handoff (#24)
+## 9. Implementation status (#24)
 
-1. Scaffold Electron + Vite + React + TypeScript in a `client/` or `electron-app/` directory (exact name TBD in #24).
-2. Implement preload bridge and typed `window.delta` (or equivalent) matching §6.
-3. Stub pages matching §7; wire Session list + health first; Live second; others behind empty states until APIs land.
+1. **Done:** Electron + Vite + React + TypeScript in [`client/`](../client/).
+2. **Done:** Preload exposes `window.delta` (`getSettings` / `setSettings`); main persists `delta-engineer-settings.json` (API base URL, last selected session id).
+3. **Done:** Shell + routing; **Sessions** and **Lap summaries** read from the API; Live / Setups / Alerts are placeholders until those milestones ship.
 
 ---
 
